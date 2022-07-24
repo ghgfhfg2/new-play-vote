@@ -390,3 +390,30 @@ footer.footer{
     background-color: rgb(224, 243, 119);    
   }
 }
+
+
+.ic_share{
+  border: 0;background: none;font-size: 18px;margin-right: 3px;
+  position: relative;z-index: 10;
+}
+.share_list{
+  display: flex;position: absolute;left: 0;
+  transform: translate(-20px);bottom: 5px;
+  opacity: 0;z-index: -1;
+  transition: all 0.2s;
+  &.on{
+    transform: translate(-100%);
+    opacity: 1;z-index: 1;
+  }
+  .ic_copy{
+    border: 0;background: none;font-size: 16px;
+  }  
+}
+
+@keyframes list_fade_in {
+  to{
+    transform: translate(-100%);
+    opacity: 1;
+  }
+}
+

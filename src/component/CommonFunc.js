@@ -106,3 +106,15 @@ export const xssReplace = (str) => {
   return strTest
 }
 
+
+//텍스트 복사
+export const copyText = (val,f) => {
+  const temp = document.createElement("textarea");
+  document.body.append(temp);
+  temp.value = val;
+  temp.select();
+  document.execCommand('copy');
+  document.body.removeChild(temp);
+  f();
+}
+

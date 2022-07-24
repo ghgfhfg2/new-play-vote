@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from "react-redux";
-import { message,Spin, Image } from "antd";
+import { message,Spin } from "antd";
 import { db } from "src/firebase";
-import { ref as dRef, set, onValue, off, runTransaction, update, query, orderByChild, limitToLast, orderByKey } from "firebase/database";
+import { ref as dRef, set, onValue, off, runTransaction, update, query, orderByChild, limitToLast } from "firebase/database";
 import { getFormatDate } from "@component/CommonFunc";
 import uuid from "react-uuid";
 import style from "styles/view.module.css";
-import { AiOutlineTrophy } from "react-icons/ai";
 import { BsChatDots,BsChatDotsFill } from "react-icons/bs";
 import { MdOutlineHowToVote, MdHowToVote } from "react-icons/md";
 
-import { FiExternalLink } from "react-icons/fi";
 import { IoIosArrowUp,IoIosArrowDown } from "react-icons/io";
 import { BiTargetLock } from "react-icons/bi";
 import {useRouter} from 'next/router';
@@ -26,6 +24,7 @@ import SubmitForm from './view/SubmitForm';
 import RoomInfo from './view/RoomInfo';
 import RoomChat from './view/RoomChat';
 import RoomVote from './view/RoomVote';
+import WinnerModal from './view/WinnerModal';
 
 const storage = getStorage();
 
@@ -84,28 +83,30 @@ function ViewCon({uid}) {
         return a.date - b.date
       })
       
-      let lastIdx = arr[arr.length-1]?.idx;
-      setChatLength(prev=>{
-        let key = `${uid}_chat`;        
-        let chk = JSON.parse(localStorage.getItem('voteChatLocalStorage'));
-        chk = chk ? chk[key] : chk; 
-        console.log(chk,lastIdx,roomType)  
-        if(chk !== lastIdx){   
-          if(roomType){
-            setNewChatState(true);
-          }else{
-            setChatStorage();
-          }
-        }
-
-        return prev === arr.length ? prev : arr.length
-      })
+      
       setChatList(arr)
     })
     return () => {
       off(chatRef);
     }
   }, []);
+
+  useEffect(()=>{
+    let lastIdx = chatList.length;
+    setChatLength(prev=>{
+      let key = `${uid}_chat`;        
+      let chk = JSON.parse(localStorage.getItem('voteChatLocalStorage'));
+      chk = chk ? chk[key] : chk; 
+      if(lastIdx && chk !== lastIdx){   
+        if(roomType){         
+          setNewChatState(true);
+        }else{            
+          setChatStorage(lastIdx);
+        }
+      }
+      return prev === lastIdx ? lastIdx : prev
+    })
+  },[chatList])
 
 
   useEffect(() => {
@@ -140,21 +141,6 @@ function ViewCon({uid}) {
           return a.date.timestamp - b.date.timestamp;
         })
 
-        let lastIdx = arr.length;
-        setListLength(prev=>{
-          let key = `${uid}_vote`;        
-          let chk = JSON.parse(localStorage.getItem('voteChatLocalStorage'))
-          chk = chk ? chk[key] : chk;
-                    
-          if(chk !== lastIdx){            
-            if(!roomType){
-              setNewVoteState(true);
-            }else{
-              setVoteStorage();
-            }
-          }
-          return prev === arr.length ? prev : arr.length
-        })
         setVoteListData(arr)
         let rankArr = arr.concat();
         rankArr = rankArr.sort((a,b)=>{
@@ -167,6 +153,23 @@ function ViewCon({uid}) {
     };
   }, [userInfo]);
 
+  useEffect(() => {
+    let lastIdx = voteListData?.length;
+    setListLength(prev=>{
+      let key = `${uid}_vote`;        
+      let chk = JSON.parse(localStorage.getItem('voteChatLocalStorage'))
+      chk = chk ? chk[key] : chk;
+      if(chk !== lastIdx){   
+        if(!roomType){
+          setNewVoteState(true);
+        }else{
+          setVoteStorage(prev);
+        }
+      }
+      return prev === lastIdx ? lastIdx : prev
+    })  
+  }, [voteListData])
+  
   
 
   const scrollToBottom = () => {
@@ -215,40 +218,39 @@ function ViewCon({uid}) {
   //스위치
   const [roomType, setRoomType] = useState(true)
   const onChangeSwitch = (type) => {
-    
     if(type === 'vote') {
+      setRoomType(true);
       setVoteStorage();
     }else{
-      setChatStorage()
+      setRoomType(false);
+      setChatStorage();
     }
   }
 
-  const setVoteStorage = () => {
+  const setVoteStorage = (num) => {
       let obj = {}
       let getStorage = JSON.parse(localStorage.getItem('voteChatLocalStorage'));
       setNewVoteState(false);
       let key = `${uid}_vote`;
-      obj[key] = listLength;
+      obj[key] = num ? num : listLength;
       getStorage = {
         ...getStorage,
         ...obj
       }
       localStorage.setItem('voteChatLocalStorage',JSON.stringify(getStorage))
-      setRoomType(true);
   }  
 
-  const setChatStorage = () => {
+  const setChatStorage = (num) => {
     let obj = {}
     let getStorage = JSON.parse(localStorage.getItem('voteChatLocalStorage'));
     setNewChatState(false)
     let key = `${uid}_chat`;
-    obj[key] = chatLength;
+    obj[key] = num ? num : chatLength;
     getStorage = {
       ...getStorage,
       ...obj
     }
     localStorage.setItem('voteChatLocalStorage',JSON.stringify(getStorage))
-    setRoomType(false);
   }
 
   const [submitLoading, setSubmitLoading] = useState(false)
@@ -511,41 +513,11 @@ function ViewCon({uid}) {
   return <>
     <div className={style.view_con_box} style={{'--domWidPx':`${domWid}px`}}>
         {ranking.length > 0 && finishVote &&
-          <div className={style.view_finish_pop}>
-            <article className={style.view_finish_con}>
-              <div className={style.view_finish_txt}>1위로 선정된 제안 <AiOutlineTrophy /></div>
-              <dl>
-                <dt>
-                  {ranking[0].title}
-                </dt>
-                <dd>
-                  {ranking[0].image &&
-                  <div className="vote_img_list">
-                    <Image.PreviewGroup>
-                      {ranking[0].image.map((src,idx)=>(
-                        <>
-                        <Image key={idx} className={style.vote_img} src={src} />
-                        </>
-                        ))
-                      }
-                    </Image.PreviewGroup>
-                  </div>
-                  }
-                  {ranking[0].link &&
-                    <span className={style.vote_link}>
-                      <a href={ranking[0].link} target="_blank">링크이동<FiExternalLink /></a>
-                    </span>
-                  }
-                </dd>
-              </dl>
-            </article>
-            <div className={style.view_finish_bg} onClick={finishPopClose}>
-            </div>
-          </div>
+          <WinnerModal ranking={ranking} finishPopClose={finishPopClose} />
         }
       <div className={style.ranking_box}>
         {roomData &&
-          <RoomInfo roomData={roomData} onOutView={onOutView} />
+          <RoomInfo roomData={roomData} roomUid={uid} onOutView={onOutView} />
         }
         {voteListData && voteListData.length > 0 && rankView &&
         <ul className={style.ranking}>
@@ -624,6 +596,7 @@ function ViewCon({uid}) {
             uid={uid}
             chatList={chatList}
             chatLength={chatLength}
+            roomType={roomType}
           />
         )
       }

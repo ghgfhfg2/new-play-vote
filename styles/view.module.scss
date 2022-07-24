@@ -259,14 +259,15 @@
 .vote_img{max-width: 100%}
 .room_data{
   background-color: #fff;position: relative;
-  @include flex($a:stretch)
+  overflow: hidden;
+  @include flex($a:stretch);
 }
 .room_left{
   @include flex($d:column,$a:flex-start);
   flex-wrap: wrap;  
   background-color: #fff;
   padding:0.6rem 1rem;
-  h2{font-size: 16px;margin-right: 15px;margin-bottom: 0;font-weight: 700;line-height: 1.4;
+  h2{font-size: 16px;margin-right: 15px;margin-bottom: 0;font-weight: 700;line-height: 1.4;word-break: break-word;
     display: block;
     @include flex();
   }
@@ -291,6 +292,7 @@
   margin-left: auto;
   @include flex($d:column,$j:space-between);
   padding: 10px 4px 5px 0;
+  position: relative;
 }
 .room_out{
   cursor: pointer;
@@ -305,6 +307,8 @@
   padding: 5px;
 
 }
+
+
 
 .right_con{
   @include flex($d:column,$a:flex-end);

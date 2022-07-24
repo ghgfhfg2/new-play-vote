@@ -1,8 +1,23 @@
-import React from 'react'
+import React, { useState } from 'react'
 import style from "styles/view.module.css";
 import { IoExitOutline } from "react-icons/io5";
 import KakaoShareButton from '@component/KakaoShareButton';
-function RoomInfo({roomData,onOutView}) {
+import { AiOutlineShareAlt } from 'react-icons/ai';
+import { FiCopy } from 'react-icons/fi';
+import { message } from 'antd';
+import { copyText } from '@component/CommonFunc';
+
+function RoomInfo({roomData,onOutView,roomUid}) {
+  const [isShareList, setIsShareList] = useState(false);
+  const onShareList = () => {
+    setIsShareList(!isShareList);
+  }
+  const onCopyCode = () => {
+    copyText(roomUid,() => {
+      console.log(3)
+      message.success('방 코드가 복사되었습니다.')
+    })
+  }
   return (
     <div className={style.room_data}>
       <div className={style.room_left}>
@@ -26,7 +41,15 @@ function RoomInfo({roomData,onOutView}) {
         <button type="button" className={style.room_out} onClick={onOutView}>
           <IoExitOutline />
         </button>
-        <KakaoShareButton roomData={roomData} />
+        <button type="button" className="ic_share" onClick={onShareList}>
+          <AiOutlineShareAlt />
+        </button>
+        <div className={isShareList ? 'share_list on' : 'share_list'}>
+          <KakaoShareButton roomData={roomData} />
+          <button type='button' className="ic_copy" onClick={onCopyCode}>
+            <FiCopy />
+          </button>
+        </div>
       </div>
     </div>
   )

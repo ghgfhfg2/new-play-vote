@@ -16,7 +16,7 @@ const KakaoShareButton = ({roomData}) => {
     roomData.add.includes('link') && roomInfoArr.push('#링크')
     roomData.add.includes('img') && roomInfoArr.push('#이미지')
     setRoomInfo(roomInfoArr.join(' '));
-  }, [])
+  }, [roomData])
   
   useEffect(() => {
     createKakaoButton()

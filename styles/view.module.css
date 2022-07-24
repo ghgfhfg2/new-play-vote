@@ -427,6 +427,7 @@
 .room_data {
   background-color: #fff;
   position: relative;
+  overflow: hidden;
   display: flex;
   justify-content: flex-start;
   align-items: stretch;
@@ -447,6 +448,7 @@
   margin-bottom: 0;
   font-weight: 700;
   line-height: 1.4;
+  word-break: break-word;
   display: block;
   display: flex;
   justify-content: flex-start;
@@ -479,7 +481,8 @@
   justify-content: space-between;
   align-items: center;
   flex-direction: column;
-  padding: 10px 4px 5px 0; }
+  padding: 10px 4px 5px 0;
+  position: relative; }
 
 .room_out {
   cursor: pointer;

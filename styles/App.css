@@ -549,3 +549,36 @@ footer.footer a svg {
 
 .chat_list__my_chat > div:last-child {
   background-color: #e0f377; }
+
+.ic_share {
+  border: 0;
+  background: none;
+  font-size: 18px;
+  margin-right: 3px;
+  position: relative;
+  z-index: 10; }
+
+.share_list {
+  display: flex;
+  position: absolute;
+  left: 0;
+  transform: translate(-20px);
+  bottom: 5px;
+  opacity: 0;
+  z-index: -1;
+  transition: all 0.2s; }
+
+.share_list.on {
+  transform: translate(-100%);
+  opacity: 1;
+  z-index: 1; }
+
+.share_list .ic_copy {
+  border: 0;
+  background: none;
+  font-size: 16px; }
+
+@keyframes list_fade_in {
+  to {
+    transform: translate(-100%);
+    opacity: 1; } }

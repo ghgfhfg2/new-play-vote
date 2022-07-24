@@ -6,13 +6,15 @@ import { ref as dRef, set, runTransaction } from "firebase/database";
 import uuid from "react-uuid"
 import ChatList from './ChatList';
 
-function RoomChat({userInfo,uid,chatList,chatLength}) {
+function RoomChat({userInfo,uid,chatList,chatLength,roomType}) {
 
   const scrollBox = useRef();
   const submitRef = useRef();
   const chatFormRef = useRef();
 
   const onFinish = (values) => {
+
+    if(!values.chat) return;
     values.chat = values.chat.replace(/\n/g,"|n|");
     let uid_ = uuid();
     runTransaction(dRef(db,`chat_list/${uid}/count`),pre=>{
