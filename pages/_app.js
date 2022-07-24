@@ -13,6 +13,7 @@ import Login from "./login";
 import Loading from "../src/component/Loading";
 import Footer from "@component/Footer";
 import AppLayout from "@component/AppLayout";
+import Join from "./join";
 
 
 function App({ Component, pageProps }) {
@@ -67,6 +68,9 @@ function App({ Component, pageProps }) {
               </>
             }
             </>
+          ) : 
+          path === '/join' ? (
+            <Join />
           ) : (
             <Login />
           )

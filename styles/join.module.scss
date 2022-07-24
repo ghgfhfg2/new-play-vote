@@ -1,0 +1,6 @@
+@import 'scss-common.scss';
+
+.top{
+  @include flex($j:center);
+  height: 50px;border-bottom: 1px solid #ddd;
+}

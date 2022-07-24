@@ -21,7 +21,7 @@ function Footer() {
         <Link href="/search">
           <a>
           {path === '/search' ? <RiSearchFill /> : <RiSearchLine />}
-          <span>검색</span>
+          <span>코드검색</span>
           </a>
         </Link>
         <Link href="/regist">

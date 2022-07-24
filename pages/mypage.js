@@ -42,6 +42,7 @@ function Mypage() {
         let tagArr = Object.keys(el.tag)
         el.tag = tagArr;
       })
+      console.log(listArr)
       setListData(listArr)
     });    
       return () => {
@@ -66,8 +67,7 @@ function Mypage() {
 
     let roomId = await get(ref(db,`user/${userInfo.uid}/room`))
     .then(data => data.val() && data.val().indexOf(`${uid}`))
-    roomId && remove(ref(db,`user/${userInfo.uid}/room/${roomId}`))
-
+    roomId != undefined && remove(ref(db,`user/${userInfo.uid}/room/${roomId}`))
     get(ref(db,`vote_list/${uid}`))
     .then(data=>{
       if(data.val()){
@@ -75,6 +75,7 @@ function Mypage() {
       }
     })
     remove(ref(db,`list/${uid}`))
+    remove(ref(db,`chat_list/${uid}`))
   }
 
   //로그아웃
@@ -151,7 +152,9 @@ function Mypage() {
       <dl className='my_list'>
         <dt className='tit'>참여목록</dt>
         <dd>
-          {listData && <ListUl router={router} userUid={userInfo.uid} listData={listData} onDel={onDel} />}
+          {listData && 
+            <ListUl router={router} userUid={userInfo.uid} listData={listData} onDel={onDel} />
+          }
         </dd>
       </dl>
     </div>

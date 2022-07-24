@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from 'next/router';
 import { db } from "src/firebase";
-import { ref, onValue, off, runTransaction, update } from "firebase/database";
+import { ref, onValue, off, runTransaction, get } from "firebase/database";
 import { Input, message, Button } from "antd";
 import ViewCon from "@component/ViewCon";
 import { RiArrowGoBackLine } from "react-icons/ri"
@@ -17,47 +17,66 @@ export default function View() {
   const [roomData, setRoomData] = useState();
   const [isJoin, setIsJoin] = useState(false);
   const [pwEnter, setPwEnter] = useState(true);
-  useEffect(() => {
-    const listRef = ref(db, `list/${uid}/`)
-    onValue(listRef, data=>{
-      let keys;
-      if(data.val()){
-        keys = Object.keys(data.val().vote_user);
-      }
-      if(userInfo && keys.includes(userInfo.uid)){
-        data.val().password = '';
-        setRoomData({
-          ...data.val(),
-          password:'',
-          uid
-        }) 
+  
+  const [isRoomCheck, setIsRoomCheck] = useState(false)
+  useEffect(()=>{
+    get(ref(db,`list/${uid}/`))
+    .then(data=>{
+      if(!data.val()){
+        message.error('방을 찾을 수 없습니다.')
+        setTimeout(()=>{
+          onBack();
+        },1000)
       }else{
-        setRoomData({
-          ...data.val(),
-          uid
-        })      
+        setIsRoomCheck(true)
       }
-    });
-
-    onValue(ref(db,`vote_list/${uid}/`), data=>{
-      let joinMember = [];
-      data.forEach(el=>{
-        el.val().user_uid.forEach(user=>{
-          joinMember = [...joinMember,user.uid]
-        })
-      })
-      userInfo && userInfo.uid && joinMember.includes(`${userInfo.uid}`) ? setIsJoin(true) : null;
     })
-    if(uid){
-      runTransaction(ref(db, `list/${uid}/join_count`), pre => {
-        return pre ? pre+1 : 1;
-      })
-    }
+  },[pwEnter])
 
-    return () => {
-      off(listRef)
-    };
-  }, [pwEnter]);
+
+
+  useEffect(() => {
+    if(isRoomCheck){
+      const listRef = ref(db, `list/${uid}/`)
+      onValue(listRef, data=>{
+        let keys;
+        if(data.val()){
+          keys = Object.keys(data.val().vote_user);
+        }
+        if(userInfo && keys.includes(userInfo.uid)){
+          data.val().password = '';
+          setRoomData({
+            ...data.val(),
+            password:'',
+            uid
+          }) 
+        }else{
+          setRoomData({
+            ...data.val(),
+            uid
+          })      
+        }
+      });
+
+      onValue(ref(db,`vote_list/${uid}/`), data=>{
+        let joinMember = [];
+        data.forEach(el=>{
+          el.val().user_uid.forEach(user=>{
+            joinMember = [...joinMember,user.uid]
+          })
+        })
+        userInfo && userInfo.uid && joinMember.includes(`${userInfo.uid}`) ? setIsJoin(true) : null;
+      })
+      if(uid){
+        runTransaction(ref(db, `list/${uid}/join_count`), pre => {
+          return pre ? pre+1 : 1;
+        })
+      }
+      return () => {
+        off(listRef)
+      };
+    }
+  }, [isRoomCheck]);
 
   const [pwInput, setPwInput] = useState();
 

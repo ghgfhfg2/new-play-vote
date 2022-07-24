@@ -18,7 +18,7 @@ function SearchPage() {
           if(!el.val().title) {
             return
           }
-          if(el.val().title.includes(e) || (el.key === e)){
+          if(el.key === e){
             listArr.push({
               ...el.val(),
               uid:el.key
@@ -33,7 +33,7 @@ function SearchPage() {
     <>
       <div className="content_box list_content_box">
         <Search 
-          placeholder="방 제목 or 코드로 검색 가능합니다."  
+          placeholder="방 코드로 검색 가능합니다."  
           onSearch={onSearch} 
           enterButton 
           size="large" 

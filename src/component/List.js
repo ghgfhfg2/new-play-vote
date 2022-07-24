@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db } from "src/firebase";
-import { ref, onValue, off, query, orderByChild, limitToLast, equalTo, orderByKey,orderByValue,limitToFirst } from "firebase/database";
-import Link from "next/link";
-import {MdOutlinePlaylistAdd} from "react-icons/md"
+import { ref, onValue, off, query, orderByChild, limitToLast, equalTo, orderByKey,orderByValue } from "firebase/database";
 import ListUl from "./ListUl";
 import { Input,Empty,Select } from "antd";
 import { getFormatDate } from "@component/CommonFunc"
@@ -37,11 +35,8 @@ function List() {
       let tagArr = data.val() && Object.keys(data.val());
       setTagList(tagArr);
 
-
-      let dataQuery = searchType === 1 && bestTag ? query(listRef,orderByChild(`tag/${bestTag}`),equalTo(1)) : 
-      searchType === 2 && searchKeyword ? query(listRef,orderByChild('date/timestamp'),limitToLast(100)) : 
-      searchType === 3 && searchKeyword ?
-      query(listRef,orderByKey(),equalTo(searchKeyword)) : query(listRef,orderByChild('date/timestamp'),limitToLast(100))
+      let dataQuery = searchType === 1 && bestTag ? query(listRef,orderByChild(`tag/${bestTag}`),equalTo(1)) :
+      query(listRef,orderByChild('date/timestamp'),limitToLast(100))
       
       onValue(dataQuery, data=>{
         let listArr = [];        
@@ -96,7 +91,6 @@ function List() {
           <Select defaultValue={1} onChange={onSearchType}>
             <Option value={1}>태그</Option>
             <Option value={2}>제목</Option>
-            <Option value={3}>코드</Option>
           </Select>
           <Search 
             placeholder="검색어를 입력해주세요"  

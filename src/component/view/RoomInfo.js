@@ -14,7 +14,6 @@ function RoomInfo({roomData,onOutView,roomUid}) {
   }
   const onCopyCode = () => {
     copyText(roomUid,() => {
-      console.log(3)
       message.success('방 코드가 복사되었습니다.')
     })
   }

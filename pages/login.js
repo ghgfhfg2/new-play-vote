@@ -1,17 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  getAuth,
   signInWithPopup,
   GoogleAuthProvider,
   signOut,
+  getAuth, createUserWithEmailAndPassword,signInWithEmailAndPassword
 } from "firebase/auth";
-import { auth, provider } from "src/firebase";
+import { ref, set } from "firebase/database";
+import { db, provider } from "src/firebase";
 import {useRouter} from 'next/router'
-import { useDispatch, useSelector } from "react-redux";
-import { setUser, clearUser } from "@redux/actions/user_action";
-import { FcGoogle } from "react-icons/fc"
+import { useDispatch } from "react-redux";
+import { setUser } from "@redux/actions/user_action";
+import { AiOutlineGoogle } from "react-icons/ai";
+import { MdAlternateEmail } from "react-icons/md";
+import Link from "next/link";
+import { Button, Form, Input, message, Modal } from "antd";
+import JoinModal from "@component/join/JoinModal";
+import LoginModal from "@component/login/LoginModal";
 
 export default function Login() {
+  const auth = getAuth();
   let dispatch = useDispatch();
   const router = useRouter();  
   const googleHandler = async () => {
@@ -50,13 +57,90 @@ export default function Login() {
       });
   };
 
+
+  const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
+  const showLoginModal = () => {
+    setIsLoginModalVisible(true);
+  }
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+  const handleCancel = () => {
+    setIsLoginModalVisible(false);
+    setIsModalVisible(false);
+  };
+
+  const onFinish = (values) => {
+    if(values.password !== values.passwordConfirm){
+      message.error('비밀번호 확인이 일치하지 않습니다');
+      return;
+    }else{
+      createUserWithEmailAndPassword(auth, values.email, values.password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        dispatch(setUser(user));
+        set(ref(db,`user/${user.uid}`),{
+          nick:values.nick
+        });
+        router.push('/')
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // ..
+      });
+    }
+  }
+
+  const onLoginSubmit  = (values) => {
+    signInWithEmailAndPassword(auth, values.email, values.password)
+    .then((userCredential) => {
+      // Signed in
+      const user = userCredential.user;
+      // ...
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+    });    
+  }
+
   return (
     <>
       <div className="login_box">
         <button type="button" onClick={googleHandler}>
-          <FcGoogle /><span>Login</span>
+          <AiOutlineGoogle /><span>구글로 로그인</span>
+        </button>
+        <button type="button" onClick={showLoginModal}>
+          <MdAlternateEmail /><span>이메일로 로그인</span>
+        </button>
+        <button type="button" onClick={showModal}>
+          <MdAlternateEmail /><span>이메일로 회원가입</span>
         </button>
       </div>
+      <Modal 
+        centered 
+        title="로그인" 
+        visible={isLoginModalVisible} 
+        onCancel={handleCancel}
+        footer={null}
+      >
+       <LoginModal 
+        onLoginSubmit ={onLoginSubmit }
+       />
+      </Modal>
+      <Modal 
+        centered 
+        title="회원가입" 
+        visible={isModalVisible} 
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <JoinModal 
+          onFinish={onFinish}
+        />
+      </Modal>
     </>
   );
 }

@@ -12,6 +12,7 @@ function Regist() {
   const userInfo = useSelector((state) => state.user.currentUser);
 
   const onFinish = (values) => {
+
     const date = getFormatDate(new Date());
     const uid = uuid();
     if(values.tag){
@@ -40,9 +41,12 @@ function Regist() {
       })
     }
     runTransaction(ref(db,`user/${userInfo.uid}`), pre => {
-      let res = pre ? pre : {room:[]};
-      res.room = [...res.room, uid]
-      return res;
+      if(pre.room){
+        pre.room = [...pre.room, uid]
+      }else{
+        pre.room = [uid]
+      }
+      return pre;
     })
     .then(()=>{
       set(ref(db,`list/${uid}`),{
