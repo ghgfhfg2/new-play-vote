@@ -1,18 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { message,Spin } from "antd";
+import { message, Spin } from "antd";
 import { db } from "src/firebase";
-import { ref as dRef, set, onValue, off, runTransaction, update, query, orderByChild, limitToLast } from "firebase/database";
+import {
+  ref as dRef,
+  set,
+  onValue,
+  off,
+  runTransaction,
+  update,
+  query,
+  orderByChild,
+  limitToLast,
+} from "firebase/database";
 import { getFormatDate } from "@component/CommonFunc";
 import uuid from "react-uuid";
 import style from "styles/view.module.css";
-import { BsChatDots,BsChatDotsFill } from "react-icons/bs";
+import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
 import { MdOutlineHowToVote, MdHowToVote } from "react-icons/md";
 
-import { IoIosArrowUp,IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { BiTargetLock } from "react-icons/bi";
-import {useRouter} from 'next/router';
-import imageCompression from 'browser-image-compression';  
+import { useRouter } from "next/router";
+import imageCompression from "browser-image-compression";
 import {
   getStorage,
   ref as sRef,
@@ -20,569 +30,657 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 
-import SubmitForm from './view/SubmitForm';
-import RoomInfo from './view/RoomInfo';
-import RoomChat from './view/RoomChat';
-import RoomVote from './view/RoomVote';
-import WinnerModal from './view/WinnerModal';
+import SubmitForm from "./view/SubmitForm";
+import RoomInfo from "./view/RoomInfo";
+import RoomChat from "./view/RoomChat";
+import RoomVote from "./view/RoomVote";
+import WinnerModal from "./view/WinnerModal";
 
 const storage = getStorage();
 
-
-function ViewCon({uid}) {
+function ViewCon({ uid }) {
   const rankingBtnRef = useRef();
   const [domWid, setDomWid] = useState();
 
-  useEffect(() => {    
+  useEffect(() => {
     setDomWid(document.body.clientWidth);
-    const script = document.createElement('script')
-    script.src = 'https://developers.kakao.com/sdk/js/kakao.js'
-    script.async = true
-    document.body.appendChild(script)
+    const script = document.createElement("script");
+    script.src = "https://developers.kakao.com/sdk/js/kakao.js";
+    script.async = true;
+    document.body.appendChild(script);
     return () => {
-      document.body.removeChild(script)
-    }    
-  }, [])
-
-  
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const scrollBox = useRef();
   const formRef = useRef();
   const listRef = useRef([]);
   const voterRef = useRef([]);
   const router = useRouter();
-  
+  const queryPath = router.query.id.join("/");
+
   const userInfo = useSelector((state) => state.user.currentUser);
   const [roomData, setRoomData] = useState();
   const [finishVote, setFinishVote] = useState(false);
   const [voteListData, setVoteListData] = useState();
   const [listLength, setListLength] = useState();
-  
+
   const [ranking, setRanking] = useState([]);
-  
+
   const [chatList, setChatList] = useState([]);
   const [chatLength, setChatLength] = useState();
 
   const [newChatState, setNewChatState] = useState(false);
   const [newVoteState, setNewVoteState] = useState(false);
-  
 
   useEffect(() => {
-    let chatRef = query(dRef(db, `chat_list/${uid}/list`), orderByChild('date'), limitToLast(200));
-    onValue(chatRef, data=>{
+    let chatRef = query(
+      dRef(db, `chat_list/${uid}/list`),
+      orderByChild("date"),
+      limitToLast(200)
+    );
+    onValue(chatRef, (data) => {
       let arr = [];
-      data.forEach((el,idx)=>{
-        arr.push(el.val())
-      })
-      arr = arr.map(el=>{
-        el.chat = el.chat.replace(/\|n\|/g, '<br />');
-        el.date = getFormatDate(new Date(el.date))
-        return el
-      })
-      arr.sort((a,b)=>{
-        return a.date - b.date
-      })
-      
-      
-      setChatList(arr)
-    })
+      data.forEach((el, idx) => {
+        arr.push(el.val());
+      });
+      arr = arr.map((el) => {
+        el.chat = el.chat.replace(/\|n\|/g, "<br />");
+        el.date = getFormatDate(new Date(el.date));
+        return el;
+      });
+      arr.sort((a, b) => {
+        return a.date - b.date;
+      });
+
+      setChatList(arr);
+    });
     return () => {
       off(chatRef);
-    }
+    };
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     let lastIdx = chatList.length;
-    setChatLength(prev=>{
-      let key = `${uid}_chat`;        
-      let chk = JSON.parse(localStorage.getItem('voteChatLocalStorage'));
-      chk = chk ? chk[key] : chk; 
-      if(lastIdx && chk !== lastIdx){   
-        if(roomType){         
+    setChatLength((prev) => {
+      let key = `${uid}_chat`;
+      let chk = JSON.parse(localStorage.getItem("voteChatLocalStorage"));
+      chk = chk ? chk[key] : chk;
+      if (lastIdx && chk !== lastIdx) {
+        if (roomType) {
           setNewChatState(true);
-        }else{            
+        } else {
           setChatStorage(lastIdx);
         }
       }
-      return prev === lastIdx ? lastIdx : prev
-    })
-  },[chatList])
-
+      return prev === lastIdx ? lastIdx : prev;
+    });
+  }, [chatList]);
 
   useEffect(() => {
+    let roomRef = dRef(db, `list/${queryPath}`);
+    onValue(roomRef, (data) => {
+      if (!data.val().ing) {
+        setFinishVote(true);
+      }
+      setRoomData(data.val());
+    });
 
-    let roomRef = dRef(db, `list/${uid}`)
-      onValue(roomRef, data=>{
-        if(!data.val().ing){
-          setFinishVote(true)
-        }
-        setRoomData(data.val())
-      })
-      
-      let voteRef = dRef(db, `vote_list/${uid}`)
-      onValue(voteRef, data=>{
-        let arr = [];
-        data.forEach(el=>{
-          arr.push({
-            ...el.val(),
-            uid:el.key
-          })
-        });     
-        
-        if(userInfo){
-          arr.forEach(list=>{
-            let check = list.user_uid.find(user=>{
-              return user.uid === userInfo.uid
-            })
-            list.already_check = check ? true : false;
-          })
-        } 
-        arr.sort((a,b)=>{
-          return a.date.timestamp - b.date.timestamp;
-        })
+    let voteRef = dRef(db, `vote_list/${queryPath}`);
+    onValue(voteRef, (data) => {
+      let arr = [];
+      data.forEach((el) => {
+        arr.push({
+          ...el.val(),
+          uid: el.key,
+        });
+      });
 
-        setVoteListData(arr)
-        let rankArr = arr.concat();
-        rankArr = rankArr.sort((a,b)=>{
+      if (userInfo) {
+        arr.forEach((list) => {
+          let check = list.user_uid.find((user) => {
+            return user.uid === userInfo.uid;
+          });
+          list.already_check = check ? true : false;
+        });
+      }
+      arr.sort((a, b) => {
+        return a.date.timestamp - b.date.timestamp;
+      });
+
+      setVoteListData(arr);
+      let rankArr = arr.concat();
+      rankArr = rankArr
+        .sort((a, b) => {
           return b.vote_count - a.vote_count;
-        }).slice(0,3);
-        setRanking(rankArr)
-      })
+        })
+        .slice(0, 3);
+      setRanking(rankArr);
+    });
     return () => {
-      off(voteRef);      
+      off(voteRef);
     };
   }, [userInfo]);
 
   useEffect(() => {
     let lastIdx = voteListData?.length;
-    setListLength(prev=>{
-      let key = `${uid}_vote`;        
-      let chk = JSON.parse(localStorage.getItem('voteChatLocalStorage'))
+    setListLength((prev) => {
+      let key = `${uid}_vote`;
+      let chk = JSON.parse(localStorage.getItem("voteChatLocalStorage"));
       chk = chk ? chk[key] : chk;
-      if(chk !== lastIdx){   
-        if(!roomType){
+      if (chk !== lastIdx) {
+        if (!roomType) {
           setNewVoteState(true);
-        }else{
+        } else {
           setVoteStorage(prev);
         }
       }
-      return prev === lastIdx ? lastIdx : prev
-    })  
-  }, [voteListData])
-  
-  
+      return prev === lastIdx ? lastIdx : prev;
+    });
+  }, [voteListData]);
 
   const scrollToBottom = () => {
-    scrollBox?.current?.scrollIntoView({block: "end"});
-  }
+    scrollBox?.current?.scrollIntoView({ block: "end" });
+  };
   useEffect(() => {
     scrollToBottom();
-  }, [listLength])
-
+  }, [listLength]);
 
   //이미지 리사이즈
-  const imageResize = async (file,size) => {
-    if(file.type === 'image/svg+xml'){
+  const imageResize = async (file, size) => {
+    if (file.type === "image/svg+xml") {
       return file;
     }
     const options = {
-      maxWidthOrHeight:size,
-      fileType:file.type
-    }
-    try{
+      maxWidthOrHeight: size,
+      fileType: file.type,
+    };
+    try {
       const compressedFile = await imageCompression(file, options);
       const promise = imageCompression.getDataUrlFromFile(compressedFile);
       return promise;
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-    
-  }
+  };
   //base64 to file
   const dataURLtoFile = (dataurl, fileName) => {
-      let arr = dataurl.split(','),
-          mime = arr[0].match(/:(.*?);/)[1],
-          bstr = atob(arr[1]), 
-          n = bstr.length, 
-          u8arr = new Uint8Array(n);
-      while(n--){
-          u8arr[n] = bstr.charCodeAt(n);
-      }
-      return new File([u8arr], fileName, {type:mime});
-  }
-
+    let arr = dataurl.split(","),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], fileName, { type: mime });
+  };
 
   const [clipImg, setClipImg] = useState([]);
 
-
   //스위치
-  const [roomType, setRoomType] = useState(true)
+  const [roomType, setRoomType] = useState(true);
   const onChangeSwitch = (type) => {
-    if(type === 'vote') {
+    if (type === "vote") {
       setRoomType(true);
       setVoteStorage();
-    }else{
+    } else {
       setRoomType(false);
       setChatStorage();
     }
-  }
+  };
 
   const setVoteStorage = (num) => {
-      let obj = {}
-      let getStorage = JSON.parse(localStorage.getItem('voteChatLocalStorage'));
-      setNewVoteState(false);
-      let key = `${uid}_vote`;
-      obj[key] = num ? num : listLength;
-      getStorage = {
-        ...getStorage,
-        ...obj
-      }
-      localStorage.setItem('voteChatLocalStorage',JSON.stringify(getStorage))
-  }  
+    let obj = {};
+    let getStorage = JSON.parse(localStorage.getItem("voteLocalStorage"));
+    setNewVoteState(false);
+    let key = `${uid}_vote`;
+    obj[key] = num ? num : listLength;
+    getStorage = {
+      ...getStorage,
+      ...obj,
+    };
+    localStorage.setItem("voteLocalStorage", JSON.stringify(getStorage));
+  };
 
   const setChatStorage = (num) => {
-    let obj = {}
-    let getStorage = JSON.parse(localStorage.getItem('voteChatLocalStorage'));
-    setNewChatState(false)
+    let obj = {};
+    let getStorage = JSON.parse(localStorage.getItem("chatLocalStorage"));
+    setNewChatState(false);
     let key = `${uid}_chat`;
     obj[key] = num ? num : chatLength;
     getStorage = {
       ...getStorage,
-      ...obj
-    }
-    localStorage.setItem('voteChatLocalStorage',JSON.stringify(getStorage))
-  }
+      ...obj,
+    };
+    localStorage.setItem("chatLocalStorage", JSON.stringify(getStorage));
+  };
 
-  const [submitLoading, setSubmitLoading] = useState(false)
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const onFinish = (values) => {
     const linkRegex = /[\<\>\{\}\s]/g;
-    values.title && values.title.replace(linkRegex,"")
-    values.link = values.link ? values.link.replace(linkRegex,"") : ''
-    values.img = values.img ? values.img.replace(linkRegex,"") : '';
-    if(values.title.length > 30){
-      message.error('제목이 너무 깁니다.');
+    values.title && values.title.replace(linkRegex, "");
+    values.link = values.link ? values.link.replace(linkRegex, "") : "";
+    values.img = values.img ? values.img.replace(linkRegex, "") : "";
+    if (values.title.length > 30) {
+      message.error("제목이 너무 깁니다.");
       return;
     }
-    if(values.link.length > 200){
-      message.error('링크주소 경로가 너무 깁니다.');
+    if (values.link.length > 200) {
+      message.error("링크주소 경로가 너무 깁니다.");
       return;
     }
-    if(values.img.length > 200){
-      message.error('이미지주소 경로가 너무 깁니다.');
+    if (values.img.length > 200) {
+      message.error("이미지주소 경로가 너무 깁니다.");
       return;
     }
-    runTransaction(dRef(db,`list/${uid}/${userInfo.uid}`), pre => {
-      if(pre && pre.submit_count && pre.submit_count >= roomData.max_vote){
+    runTransaction(dRef(db, `list/${queryPath}/${userInfo.uid}`), (pre) => {
+      if (pre && pre.submit_count && pre.submit_count >= roomData.max_vote) {
         message.error(`최대 제안횟수를 초과했습니다.`);
         return;
-      }else{
+      } else {
         setSubmitLoading(true);
         let files = clipImg;
-        if(files.length > 0){
+        if (files.length > 0) {
           values.image = [];
-          files.forEach(el=>{
+          files.forEach((el) => {
             let file = el.file;
-            const metadata = {contentType:file.type};
-            const storageRef = sRef(storage,`images/${uid}/${el.fileName}`);
-            imageResize(file,400).then(data=>{     
-              file = dataURLtoFile(data,file.name)
-            })
-            .then(()=>{
-              const uploadTask = uploadBytesResumable(storageRef, file, metadata);
-              uploadTask.on('state_changed',
-                (snapshot) => {
-                  const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                  switch (snapshot.state) {
-                    case 'paused':
-                      break;
-                    case 'running':
-                      break;
-                  }
-                },
-                (error) => {
-                  switch (error.code) {
-                    case 'storage/unauthorized':
-                      break;
-                    case 'storage/canceled':
-                      break;
-                    // ...
-                    case 'storage/unknown':
-                      break;
-                  }
-                },
-                () => {
-                  getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    values.image = [...values.image,downloadURL]
-                    if(values.image.length === files.length){
-                      onSubmit(values);
+            const metadata = { contentType: file.type };
+            const storageRef = sRef(storage, `images/${uid}/${el.fileName}`);
+            imageResize(file, 400)
+              .then((data) => {
+                file = dataURLtoFile(data, file.name);
+              })
+              .then(() => {
+                const uploadTask = uploadBytesResumable(
+                  storageRef,
+                  file,
+                  metadata
+                );
+                uploadTask.on(
+                  "state_changed",
+                  (snapshot) => {
+                    const progress =
+                      (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    switch (snapshot.state) {
+                      case "paused":
+                        break;
+                      case "running":
+                        break;
                     }
-                  })
-                }
-              )
-            })
-          })
-        }else{
+                  },
+                  (error) => {
+                    switch (error.code) {
+                      case "storage/unauthorized":
+                        break;
+                      case "storage/canceled":
+                        break;
+                      // ...
+                      case "storage/unknown":
+                        break;
+                    }
+                  },
+                  () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then(
+                      (downloadURL) => {
+                        values.image = [...values.image, downloadURL];
+                        if (values.image.length === files.length) {
+                          onSubmit(values);
+                        }
+                      }
+                    );
+                  }
+                );
+              });
+          });
+        } else {
           onSubmit(values);
         }
-          
+
         let res = {
           ...pre,
-          submit_count : pre && pre.submit_count ? pre.submit_count+1 : 1,
-        }        
+          submit_count: pre && pre.submit_count ? pre.submit_count + 1 : 1,
+        };
         return res;
       }
-    })
+    });
   };
 
   const onSubmit = (values) => {
-    values.upload = '';
+    values.upload = "";
     const date = getFormatDate(new Date());
-    const uid_ = uuid();   
+    const uid_ = uuid();
     const val = {
       ...values,
       date,
-      user_name:userInfo.displayName,
-      vote_user:userInfo.uid,
-      user_uid:[{uid:userInfo.uid,name:userInfo.displayName}],
-      vote_count:1
-    }
-    set(dRef(db,`vote_list/${uid}/${uid_}`),{
-      ...val
+      user_name: userInfo.displayName,
+      vote_user: userInfo.uid,
+      user_uid: [{ uid: userInfo.uid, name: userInfo.displayName }],
+      vote_count: 1,
+    };
+    set(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+      ...val,
     });
-    closeSubmitPop();  
+    closeSubmitPop();
     setSubmitLoading(false);
-    
-  }
+  };
 
-  const onVote = (uid_,user_uid,vote_userId,already) => {
-    let uidArr = [];    
-    user_uid.map(user => {
-      uidArr.push(user.uid)
-    })
-    if(roomData.cancel === 2){
-      if(uidArr.includes(userInfo.uid)){
-        message.error('이미 투표한 의견입니다.');
-        return
-      }
-      if(roomData.type === 1 && roomData.vote_user && roomData.vote_user[userInfo.uid] && roomData.vote_user[userInfo.uid].vote_count >= 1){
-        message.error('단일투표 입니다.');
+  const onVote = (uid_, user_uid, vote_userId, already) => {
+    let uidArr = [];
+    user_uid.map((user) => {
+      uidArr.push(user.uid);
+    });
+    if (roomData.cancel === 2) {
+      if (uidArr.includes(userInfo.uid)) {
+        message.error("이미 투표한 의견입니다.");
         return;
       }
-      update(dRef(db,`vote_list/${uid}/${uid_}`),{
-        user_uid: [...user_uid,{uid:userInfo.uid,name:userInfo.displayName}]
+      if (
+        roomData.type === 1 &&
+        roomData.vote_user &&
+        roomData.vote_user[userInfo.uid] &&
+        roomData.vote_user[userInfo.uid].vote_count >= 1
+      ) {
+        message.error("단일투표 입니다.");
+        return;
+      }
+      update(dRef(db, `vote_list/${uid}/${uid_}`), {
+        user_uid: [
+          ...user_uid,
+          { uid: userInfo.uid, name: userInfo.displayName },
+        ],
       });
-      runTransaction(dRef(db,`vote_list/${uid}/${uid_}/vote_count`),pre => {
-        return pre ? ++pre : 1;
-      });
-  
-      runTransaction(dRef(db,`list/${uid}/vote_user/${userInfo.uid}`), pre => {
-        let res = {
-          ...pre,
-          vote_count : pre && pre.vote_count ? pre.vote_count+1 : 1,
+      runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
+        (pre) => {
+          return pre ? ++pre : 1;
         }
-        return res;
-      });
-    }else if(already){      
-      if(userInfo.uid === vote_userId){
-        message.error('본인제안은 투표 취소할 수 없습니다.')
-        return
-      }else{
-        let newUser = user_uid.filter(el=>el.uid !== userInfo.uid);
-        update(dRef(db,`vote_list/${uid}/${uid_}`),{
-          user_uid: [...newUser]
-        });
-        runTransaction(dRef(db,`vote_list/${uid}/${uid_}/vote_count`),pre => {
-          return pre ? --pre : 0;
-        });
-    
-        runTransaction(dRef(db,`list/${uid}/vote_user/${userInfo.uid}`), pre => {
+      );
+
+      runTransaction(
+        dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
+        (pre) => {
           let res = {
             ...pre,
-            vote_count : pre && pre.vote_count ? pre.vote_count-1 : 0,
-          }
+            vote_count: pre && pre.vote_count ? pre.vote_count + 1 : 1,
+          };
           return res;
-        });
-      }
-    }else{
-      update(dRef(db,`vote_list/${uid}/${uid_}`),{
-        user_uid: [...user_uid,{uid:userInfo.uid,name:userInfo.displayName}]
-      });
-      runTransaction(dRef(db,`vote_list/${uid}/${uid_}/vote_count`),pre => {
-        return pre ? ++pre : 1;
-      });
-  
-      runTransaction(dRef(db,`list/${uid}/vote_user/${userInfo.uid}`), pre => {
-        let res = {
-          ...pre,
-          vote_count : pre && pre.vote_count ? pre.vote_count+1 : 1,
         }
-        return res;
-      });      
-    }
-  }
+      );
+    } else if (already) {
+      if (userInfo.uid === vote_userId) {
+        message.error("본인제안은 투표 취소할 수 없습니다.");
+        return;
+      } else {
+        let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
+        update(dRef(db, `vote_list/${uid}/${uid_}`), {
+          user_uid: [...newUser],
+        });
+        runTransaction(
+          dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
+          (pre) => {
+            return pre ? --pre : 0;
+          }
+        );
 
-  const submitBox = useRef()
+        runTransaction(
+          dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
+          (pre) => {
+            let res = {
+              ...pre,
+              vote_count: pre && pre.vote_count ? pre.vote_count - 1 : 0,
+            };
+            return res;
+          }
+        );
+      }
+    } else {
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+        user_uid: [
+          ...user_uid,
+          { uid: userInfo.uid, name: userInfo.displayName },
+        ],
+      });
+      let voteCount;
+      runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
+        (pre) => {
+          voteCount = pre ? ++pre : 1;
+          return voteCount;
+        }
+      );
+      runTransaction(
+        dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
+        (pre) => {
+          let res = {
+            ...pre,
+            vote_count: pre && pre.vote_count ? pre.vote_count + 1 : 1,
+          };
+          return res;
+        }
+      );
+    }
+    if (roomData.finish_type === 2 && voteCount >= roomData.finish_count) {
+      onVoteFinish();
+    }
+  };
+
+  const submitBox = useRef();
   const [submitPop, setsubmitPop] = useState(false);
   const onSubmitPop = () => {
     setsubmitPop(true);
-    submitBox.current.style.transform = 'translate(-50%,0)'
-    submitBox.current.style.display = 'block'
-  }
+    submitBox.current.style.transform = "translate(-50%,0)";
+    submitBox.current.style.display = "block";
+  };
   const closeSubmitPop = () => {
     setsubmitPop(false);
-    submitBox.current.style.transform = 'translate(-50%,100%)'   
-    submitBox.current.style.display = 'none' 
+    submitBox.current.style.transform = "translate(-50%,100%)";
+    submitBox.current.style.display = "none";
     formRef.current.setFieldsValue({
-      title:'',
-      link:''
-    });  
-    setClipImg('');
-    setTimeout(()=>{
+      title: "",
+      link: "",
+    });
+    setClipImg("");
+    setTimeout(() => {
       scrollToBottom();
-    },500)  
-  }
+    }, 500);
+  };
 
   const clipboard = (e) => {
-    
     const date = new Date().getTime();
     let fileObj = {};
-    if( e.type === 'paste' && !e.clipboardData.files[0]){
-      message.error('이미지가 아닙니다')
-      return
+    if (e.type === "paste" && !e.clipboardData.files[0]) {
+      message.error("이미지가 아닙니다");
+      return;
     }
 
-    fileObj.file = e.type === 'paste' ? e.clipboardData.files[0] : e.target.files[0];
+    fileObj.file =
+      e.type === "paste" ? e.clipboardData.files[0] : e.target.files[0];
     const fileType = fileObj.file.type;
-    if(fileType !== 'image/gif' && fileType !== 'image/png' && fileType !== 'image/jpeg'){
-      message.error('지원하지않는 형식 입니다.')
-      return
+    if (
+      fileType !== "image/gif" &&
+      fileType !== "image/png" &&
+      fileType !== "image/jpeg"
+    ) {
+      message.error("지원하지않는 형식 입니다.");
+      return;
     }
-    fileObj.fileName = e.type === 'paste' ? `${date}_copyImage.png` : `${date}_${fileObj.file.name}`;
-    imageResize(fileObj.file,60).then(res=>{
+    fileObj.fileName =
+      e.type === "paste"
+        ? `${date}_copyImage.png`
+        : `${date}_${fileObj.file.name}`;
+    imageResize(fileObj.file, 60).then((res) => {
       fileObj.thumbnail = res;
-      setClipImg([...clipImg,fileObj])
-    })
-  }
+      setClipImg([...clipImg, fileObj]);
+    });
+  };
   const removeClipImg = (idx) => {
     let arr = clipImg.concat();
-    arr.splice(idx,1);
-    setClipImg(arr)
-  }    
+    arr.splice(idx, 1);
+    setClipImg(arr);
+  };
 
   const onOutView = () => {
-    router.back()
-  }
+    router.back();
+  };
 
-  
   const onVoteFinish = () => {
-    runTransaction(dRef(db,`list/${uid}/ing`), pre => {
-      setFinishVote(true)
+    runTransaction(dRef(db, `list/${queryPath}/ing`), (pre) => {
+      setFinishVote(true);
       return false;
-    })
-    message.success('투표가 종료되었습니다.')
-  }
+    });
+    message.success("투표가 종료되었습니다.");
+  };
 
   const finishPopClose = () => {
-    setFinishVote(false)
-  }
+    setFinishVote(false);
+  };
 
   const onMoveList = (uid) => {
-    listRef.current.map(el=>{
-      if(el.dataset.uid === uid){
-        el.scrollIntoView({ behavior: 'smooth', block: "center" });
-        el.classList.add('ani_shake');
+    listRef.current.map((el) => {
+      if (el.dataset.uid === uid) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ani_shake");
         setTimeout(() => {
-          el.classList.remove('ani_shake')
+          el.classList.remove("ani_shake");
         }, 500);
       }
-    })
-  }
-  
-  const [rankView, setrankView] = useState(false)
+    });
+  };
+
+  const [rankView, setrankView] = useState(false);
   const toggleRanking = () => {
     setrankView(!rankView);
-  }
-
+  };
 
   const viewVoterList = (idx) => {
-    let ref = voterRef.current[idx]
-    ref.style.display = ref.style.display === 'none' ? 'flex' : 'none'
-  }
+    let ref = voterRef.current[idx];
+    ref.style.display = ref.style.display === "none" ? "flex" : "none";
+  };
 
-  return <>
-    <div className={style.view_con_box} style={{'--domWidPx':`${domWid}px`}}>
-        {ranking.length > 0 && finishVote &&
+  return (
+    <>
+      <div
+        className={style.view_con_box}
+        style={{ "--domWidPx": `${domWid}px` }}
+      >
+        {ranking.length > 0 && finishVote && (
           <WinnerModal ranking={ranking} finishPopClose={finishPopClose} />
-        }
-      <div className={style.ranking_box}>
-        {roomData &&
-          <RoomInfo roomData={roomData} roomUid={uid} onOutView={onOutView} />
-        }
-        {voteListData && voteListData.length > 0 && rankView &&
-        <ul className={style.ranking}>
-          {ranking.map((el,idx)=>(
-            <li key={idx} onClick={()=>onMoveList(el.uid)}>
-              <span className={style.rank}>{idx+1}</span>
-              <div className={style.rank_con}>
-                <div className={style.desc}>
-                  <span className={style.vote_tit}>{el.title}</span>
-                </div>                
-              </div>
-              <div  className={style.ic_target}>
-                <BiTargetLock style={{marginRight:"4px",fontSize:"13px"}} />이동
-              </div>
-            </li>
-          ))}
-        </ul>
-        }
-        <button ref={rankingBtnRef} type="button" className={style.btn_fold} onClick={toggleRanking}>
-        {rankView ? (
-          <><IoIosArrowUp />랭킹숨기기</>
-        ):(
-          <><IoIosArrowDown />랭킹보기</>
         )}
-        </button>
-        <div className={style.btn_switch}>
-          <button type="button" onClick={()=>{onChangeSwitch('vote')}} className={style.btn_switch_vote}
-            style={roomType ? {opacity:"1"} : {opacity:"0.6"}}
+        <div className={style.ranking_box}>
+          {roomData && (
+            <RoomInfo roomData={roomData} roomUid={uid} onOutView={onOutView} />
+          )}
+          {voteListData && voteListData.length > 0 && rankView && (
+            <ul className={style.ranking}>
+              {ranking.map((el, idx) => (
+                <li key={idx} onClick={() => onMoveList(el.uid)}>
+                  <span className={style.rank}>{idx + 1}</span>
+                  <div className={style.rank_con}>
+                    <div className={style.desc}>
+                      <span className={style.vote_tit}>{el.title}</span>
+                    </div>
+                  </div>
+                  <div className={style.ic_target}>
+                    <BiTargetLock
+                      style={{ marginRight: "4px", fontSize: "13px" }}
+                    />
+                    이동
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <button
+            ref={rankingBtnRef}
+            type="button"
+            className={style.btn_fold}
+            onClick={toggleRanking}
           >
-            {roomType ? <MdHowToVote style={{fontSize:"18px"}} /> : <MdOutlineHowToVote style={{fontSize:"18px"}} /> }
+            {rankView ? (
+              <>
+                <IoIosArrowUp />
+                랭킹숨기기
+              </>
+            ) : (
+              <>
+                <IoIosArrowDown />
+                랭킹보기
+              </>
+            )}
           </button>
-          {newVoteState && <span className={style.btn_switch_ic_new_vote}>n</span>}
-          {newChatState && <span className={style.btn_switch_ic_new_chat}>n</span>}
-          <button type="button" onClick={()=>{onChangeSwitch('chat')}} className={style.btn_switch_chat}
-            style={roomType ? {opacity:"0.6"} : {opacity:"1"}}
-          >
-            {roomType ? <BsChatDots /> : <BsChatDotsFill /> }
-          </button>
+          <div className={style.btn_switch}>
+            <button
+              type="button"
+              onClick={() => {
+                onChangeSwitch("vote");
+              }}
+              className={style.btn_switch_vote}
+              style={roomType ? { opacity: "1" } : { opacity: "0.6" }}
+            >
+              {roomType ? (
+                <MdHowToVote style={{ fontSize: "18px" }} />
+              ) : (
+                <MdOutlineHowToVote style={{ fontSize: "18px" }} />
+              )}
+            </button>
+            {newVoteState && (
+              <span className={style.btn_switch_ic_new_vote}>n</span>
+            )}
+            {newChatState && (
+              <span className={style.btn_switch_ic_new_chat}>n</span>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                onChangeSwitch("chat");
+              }}
+              className={style.btn_switch_chat}
+              style={roomType ? { opacity: "0.6" } : { opacity: "1" }}
+            >
+              {roomType ? <BsChatDots /> : <BsChatDotsFill />}
+            </button>
+          </div>
         </div>
-      </div>
-      {
-        roomType && (
-          <RoomVote 
+        {roomType && (
+          <RoomVote
             userInfo={userInfo}
             roomData={roomData}
-            scrollBox={scrollBox} 
-            voteListData={voteListData} 
+            scrollBox={scrollBox}
+            voteListData={voteListData}
             listRef={listRef}
             voterRef={voterRef}
             viewVoterList={viewVoterList}
             onVote={onVote}
           />
-        )
-      }
-      
-      {
-        roomType ? (
+        )}
+
+        {roomType ? (
           <>
             <div className={style.empty}></div>
             {roomData && roomData.ing ? (
               <div className={style.btn_open_box}>
-              <button type="button" className={style.btn_open} onClick={onSubmitPop}>의견제안</button>
-              {roomData && userInfo && roomData.host === userInfo.uid &&
-                <button type="button" className={style.btn_finish} onClick={onVoteFinish}>투표종료</button>
-              }
+                <button
+                  type="button"
+                  className={style.btn_open}
+                  onClick={onSubmitPop}
+                >
+                  의견제안
+                </button>
+                {roomData &&
+                  userInfo &&
+                  roomData.finish_type === 1 &&
+                  roomData.host === userInfo.uid && (
+                    <button
+                      type="button"
+                      className={style.btn_finish}
+                      onClick={onVoteFinish}
+                    >
+                      투표종료
+                    </button>
+                  )}
               </div>
             ) : (
               <div className={style.btn_open_box}>
@@ -591,29 +689,37 @@ function ViewCon({uid}) {
             )}
           </>
         ) : (
-          <RoomChat 
+          <RoomChat
             userInfo={userInfo}
             uid={uid}
             chatList={chatList}
             chatLength={chatLength}
             roomType={roomType}
           />
-        )
-      }
-      
-      {submitPop &&
-        <div className={style.bg_box} onClick={closeSubmitPop}></div>
-      }
-      <div ref={submitBox} className={style.submit_box}>
-        {submitLoading && 
-          <div className={style.loading_box}>
-            <Spin tip="Loading..."></Spin>
-          </div>
-        }        
-        <SubmitForm onFinish={onFinish} roomData={roomData} formRef={formRef} imageResize={imageResize} removeClipImg={removeClipImg} clipImg={clipImg} clipboard={clipboard} />
+        )}
+
+        {submitPop && (
+          <div className={style.bg_box} onClick={closeSubmitPop}></div>
+        )}
+        <div ref={submitBox} className={style.submit_box}>
+          {submitLoading && (
+            <div className={style.loading_box}>
+              <Spin tip="Loading..."></Spin>
+            </div>
+          )}
+          <SubmitForm
+            onFinish={onFinish}
+            roomData={roomData}
+            formRef={formRef}
+            imageResize={imageResize}
+            removeClipImg={removeClipImg}
+            clipImg={clipImg}
+            clipboard={clipboard}
+          />
+        </div>
       </div>
-    </div>
-  </>;
+    </>
+  );
 }
 
 export default ViewCon;

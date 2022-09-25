@@ -108,7 +108,9 @@ section {
 body {
   line-height: 1; }
 
-body dl, body ol, body ul {
+body dl,
+body ol,
+body ul {
   margin-bottom: 0; }
 
 ol,
@@ -127,7 +129,7 @@ q:after {
   content: none; }
 
 html {
-  font-family: 'Noto Sans KR';
+  font-family: "Noto Sans KR";
   background-color: #f1f1f1; }
 
 body {
@@ -143,7 +145,7 @@ table {
   border-spacing: 0; }
 
 .ant-input::placeholder {
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 18px; }
 
 #content {
@@ -151,6 +153,7 @@ table {
   width: 100%;
   margin: 0 auto;
   max-width: 1000px;
+  background-color: #fff;
   padding: 0; }
 
 .content_box {
@@ -242,7 +245,7 @@ footer.footer a {
   flex: 1;
   color: #333;
   cursor: pointer;
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 17px;
   line-height: 1.1;
   display: flex;
@@ -281,7 +284,7 @@ footer.footer a svg {
   padding-bottom: 0; }
 
 .list_content_box .tag_list {
-  font-family: 'Dongle';
+  font-family: "Dongle";
   margin-top: 20px;
   margin-bottom: 0;
   display: flex;
@@ -392,7 +395,7 @@ footer.footer a svg {
 .mypage_box .my_list dt.tit {
   margin-bottom: 10px;
   font-weight: 700;
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 22px; }
 
 .right_menu {
@@ -418,7 +421,7 @@ footer.footer a svg {
   font-size: 12px; }
 
 .ant-btn-primary {
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 22px !important; }
 
 .ant-btn-primary span {
@@ -451,7 +454,7 @@ footer.footer a svg {
   font-size: 22px; }
 
 .regist_box .ant-form label {
-  font-family: 'Dongle'; }
+  font-family: "Dongle"; }
 
 .regist_box .ant-row.ant-form-item {
   padding: 0 1rem; }
@@ -478,7 +481,7 @@ footer.footer a svg {
   font-size: 18px; }
 
 .regist_box .ant-input:placeholder-shown {
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-weight: 400;
   font-size: 18px; }
 
@@ -495,12 +498,12 @@ footer.footer a svg {
 
 .search_input_box .ant-select-single .ant-select-selector .ant-select-selection-item {
   line-height: 1;
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 20px;
   padding-top: 12px; }
 
 .ant-select-item-option-content {
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 20px; }
 
 .search_radio {
@@ -513,7 +516,7 @@ footer.footer a svg {
   text-align: center; }
 
 .ani_shake {
-  animation: 'ani_shake' 0.3s both; }
+  animation: "ani_shake" 0.3s both; }
 
 @keyframes ani_shake {
   from {
