@@ -10,22 +10,18 @@ function SearchPage() {
 
   const [listData, setListData] = useState();
   const onSearch = (e) => {
-      const listRef = ref(db, 'list');
+      const listRef = ref(db, `list_index/${e}`);
       get(listRef)
       .then(data=>{
-        let listArr = [];
-        data.forEach(el=>{
-          if(!el.val().title) {
-            return
-          }
-          if(el.key === e){
-            listArr.push({
-              ...el.val(),
-              uid:el.key
-            })
-          }            
+        const path = `${data.val().path}/${e}`;
+        console.log(data.val().path)
+        get(ref(db,`list/${path}`))
+        .then(data=>{
+          let listArr = [];
+          listArr.push(data.val())
+          console.log(listArr)
+          setListData(listArr)
         })
-        setListData(listArr)
       });
   }
 

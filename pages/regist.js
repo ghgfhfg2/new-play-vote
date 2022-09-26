@@ -61,6 +61,9 @@ function Regist() {
           host: userInfo.uid,
           vote_user: "",
         });
+        set(ref(db, `list_index/${uid}`), {
+          path:`${date.year}/${date.month}/${date.day}`
+        });
       })
       .then(() => {
         router.push(`/view/${date.year}/${date.month}/${date.day}/${uid}`);

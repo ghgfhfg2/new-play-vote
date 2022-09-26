@@ -24,10 +24,10 @@ function List() {
   const [bestTag, setBestTag] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchType, setSearchType] = useState(1);
-
-  const [searchDate, setSearchDate] = useState(new Date());
-
   let curDate = getFormatDate(new Date());
+  let curDate_ = new Date()
+  let prevDate_ = getFormatDate(new Date(curDate_.setDate(curDate_.getDate() - 1)))
+  const [searchDate, setSearchDate] = useState(prevDate_);
   const onSearchType = (e) => {
     setSearchType(e);
   };
@@ -60,7 +60,7 @@ function List() {
         dataQuery =
           searchType === 1 && bestTag
             ? query(listRef, orderByChild(`tag/${bestTag}`), equalTo(1))
-            : query(listRef, orderByChild("date/day"), equalTo(25));
+            : query(listRef, orderByChild("date/day"), equalTo(curDate.day));
 
         onValue(dataQuery, (data) => {
           let listArr = [];
@@ -105,16 +105,13 @@ function List() {
     };
   }, [searchKeyword, bestTag]);
 
-  const getAddList = () => {
-    let prevDate = getFormatDate(
-      new Date(searchDate.setDate(searchDate.getDate() - 1))
-    );
-
-    let newlistRef = query(listRef, orderByChild("date/day"), equalTo(24));
-    onValue(newlistRef, (data) => {
+  const getAddList = () => {    
+    let prevDateT = new Date(searchDate.timestamp);
+    let prevDate = getFormatDate(prevDateT);
+    get(ref(db, `list/${prevDate.year}/${prevDate.month}/${prevDate.day}`))
+    .then(data=>{
       let listArr = [];
       data.forEach((el) => {
-        console.log(el.val());
         if (searchType === 2 && searchKeyword !== "") {
           if (
             el.val().title.includes(searchKeyword) ||
@@ -139,9 +136,10 @@ function List() {
         let tagArr = Object.keys(el.tag);
         el.tag = tagArr;
       });
-      console.log(listArr);
       setListData([...listData, ...listArr]);
-    });
+      setSearchDate(getFormatDate(new Date(prevDateT.setDate(prevDateT.getDate() - 1))));
+    })
+
   };
 
   const onSearch = (e) => {
@@ -189,7 +187,9 @@ function List() {
       {listData && listData.length > 0 ? (
         <div className="content_box list_content_box">
           <ListUl listData={listData} />
-          <Button onClick={getAddList}>add</Button>
+          {/* <div style={{display:"flex",justifyContent:"center",marginTop:"20px"}}>
+            <Button onClick={getAddList}>{searchDate.year}.{searchDate.month}.{searchDate.day} 보기</Button>
+          </div> */}
         </div>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
