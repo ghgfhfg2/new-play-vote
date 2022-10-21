@@ -14,7 +14,6 @@ function SearchPage() {
       get(listRef)
       .then(data=>{
         const path = `${data.val().path}/${e}`;
-        console.log(data.val().path)
         get(ref(db,`list/${path}`))
         .then(data=>{
           let listArr = [];

@@ -5,7 +5,7 @@ import { signOut } from "firebase/auth";
 import { clearUser, nickChange } from "@redux/actions/user_action";
 import { useRouter } from "next/router";
 import { db } from "src/firebase";
-import { ref, onValue, remove, get, off, update } from "firebase/database";
+import { ref, onValue, remove, get, off, update, orderByValue, orderByChild, query, equalTo, orderByKey, startAt, endAt } from "firebase/database";
 import { Modal, Input, message, Menu, Dropdown } from "antd";
 import ListUl from "../src/component/ListUl";
 import { IoSettingsOutline } from "react-icons/io5";
@@ -26,24 +26,25 @@ function Mypage() {
 
   const [listData, setListData] = useState();
   useEffect(() => {
-    const listRef = ref(
-      db,
-      `list/${curDate.year}/${curDate.month}/${curDate.day}`
-    );
+    const listRef = query(ref( db,`list/${curDate.year}/${curDate.month}`),orderByKey(),startAt('0'),endAt('31'))
 
     onValue(listRef, (data) => {
       let listArr = [];
       data.forEach((el) => {
         let vote_check = false;
-        if (el.val().vote_user) {
-          for (let key in el.val().vote_user) {
-            if (userInfo) {
-              vote_check = userInfo.uid === key ? true : false;
+        const list = el.val();
+        for(const key in list){
+          console.log(list[key])
+          if (list[key].vote_user) {
+            for (let key2 in list[key].vote_user) {
+              if (userInfo) {
+                vote_check = userInfo.uid === key2 ? true : false;
+              }
             }
           }
-        }
-        if ((userInfo && el.val().host === userInfo.uid) || vote_check) {
-          listArr.push({ ...el.val(), uid: el.key });
+          if ((userInfo && list[key].host === userInfo.uid) || vote_check) {
+            listArr.push({ ...list[key], uid: key });
+          }
         }
       });
       // tag를 객체에서 배열로 변환
@@ -51,7 +52,6 @@ function Mypage() {
         let tagArr = Object.keys(el.tag);
         el.tag = tagArr;
       });
-      console.log(listArr);
       setListData(listArr);
     });
     return () => {
