@@ -5,11 +5,8 @@ class MyDocument extends Document {
     return (
       <Html lang="ko">
         <Head>
-          <script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2855442963565159"
-            crossorigin="anonymous"
-          ></script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6788425959877259"
+     crossOrigin="anonymous"></script>
         </Head>
         <body>
           <Main />

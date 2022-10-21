@@ -18,8 +18,11 @@ function SearchPage() {
         get(ref(db,`list/${path}`))
         .then(data=>{
           let listArr = [];
-          listArr.push(data.val())
-          console.log(listArr)
+          let obj = {
+            ...data.val(),
+            uid:data.key
+          }
+          listArr.push(obj)
           setListData(listArr)
         })
       });

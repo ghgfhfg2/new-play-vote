@@ -58,7 +58,7 @@ function ViewCon({ uid }) {
   const listRef = useRef([]);
   const voterRef = useRef([]);
   const router = useRouter();
-  const queryPath = router.query.id.join("/");
+  const queryPath = `${router.query.year}/${router.query.mon}/${router.query.day}/${router.query.uid}`;
 
   const userInfo = useSelector((state) => state.user.currentUser);
   const [roomData, setRoomData] = useState();
@@ -148,7 +148,6 @@ function ViewCon({ uid }) {
       arr.sort((a, b) => {
         return a.date.timestamp - b.date.timestamp;
       });
-
       setVoteListData(arr);
       let rankArr = arr.concat();
       rankArr = rankArr
@@ -372,6 +371,7 @@ function ViewCon({ uid }) {
     user_uid.map((user) => {
       uidArr.push(user.uid);
     });
+
     if (roomData.cancel === 2) {
       if (uidArr.includes(userInfo.uid)) {
         message.error("이미 투표한 의견입니다.");
@@ -386,7 +386,7 @@ function ViewCon({ uid }) {
         message.error("단일투표 입니다.");
         return;
       }
-      update(dRef(db, `vote_list/${uid}/${uid_}`), {
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
         user_uid: [
           ...user_uid,
           { uid: userInfo.uid, name: userInfo.displayName },
@@ -415,7 +415,7 @@ function ViewCon({ uid }) {
         return;
       } else {
         let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
-        update(dRef(db, `vote_list/${uid}/${uid_}`), {
+        update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
           user_uid: [...newUser],
         });
         runTransaction(

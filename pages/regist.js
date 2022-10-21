@@ -66,7 +66,7 @@ function Regist() {
         });
       })
       .then(() => {
-        router.push(`/view/${date.year}/${date.month}/${date.day}/${uid}`);
+        router.push(`/view/id?year=${date.year}/&mon=${date.month}/&day=${date.day}/&uid=${uid}`);
       });
   };
 

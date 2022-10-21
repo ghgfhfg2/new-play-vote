@@ -18,7 +18,7 @@ function ListUl({ listData, onDel, userUid }) {
               <span className={style.state_end}></span>
             )}
             <Link
-              href={`/view/${el.date.year}/${el.date.month}/${el.date.day}/${el.uid}`}
+              href={`/view/id?year=${el.date.year}&mon=${el.date.month}&day=${el.date.day}&uid=${el.uid}`}
             >
               <a className={style.a}>
                 <dl>
