@@ -52,7 +52,7 @@ function ListUl({ listData, onDel, userUid }) {
             {el.host === userUid && (
               <Popconfirm
                 title="해당 방을 삭제하시겠습니까?"
-                onConfirm={() => onDel(el.uid)}
+                onConfirm={() => onDel(el.uid,el.date)}
                 okText="네"
                 cancelText="아니요"
               >

@@ -89,16 +89,16 @@ function Regist() {
         <Form
           name="basic"
           initialValues={{
-            type: 1,
-            sender: 1,
-            voter: 1,
+            type: 2,
+            sender: 2,
+            voter: 2,
             cancel: 1,
             finish_type: 1,
             finish_count: 2,
-            room_open: 1,
+            room_open: 2,
             password: "",
-            max_vote: 1,
-            add: "",
+            max_vote: 5,
+            add: ["link","img"],
           }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}

@@ -523,7 +523,7 @@ function ViewCon({ uid }) {
   };
 
   const onOutView = () => {
-    router.back();
+    router.push('/mypage');
   };
 
   const onVoteFinish = () => {

@@ -34,7 +34,6 @@ function Mypage() {
         let vote_check = false;
         const list = el.val();
         for(const key in list){
-          console.log(list[key])
           if (list[key].vote_user) {
             for (let key2 in list[key].vote_user) {
               if (userInfo) {
@@ -59,7 +58,8 @@ function Mypage() {
     };
   }, [userInfo]);
 
-  const onDel = async (uid) => {
+  const onDel = async (uid,date) => {
+
     const listRef = sRef(storage, `images/${uid}`);
     listAll(listRef).then((res) => {
       res.items.forEach((itemRef) => {
@@ -83,25 +83,25 @@ function Mypage() {
     get(
       ref(
         db,
-        `vote_list/${curDate.year}/${curDate.month}/${curDate.day}/${uid}`
+        `vote_list/${date.year}/${date.month}/${date.day}/${uid}`
       )
     ).then((data) => {
       if (data.val()) {
         remove(
           ref(
             db,
-            `vote_list/${curDate.year}/${curDate.month}/${curDate.day}/${uid}`
+            `vote_list/${date.year}/${date.month}/${date.day}/${uid}`
           )
         );
       }
     });
     remove(
-      ref(db, `list/${curDate.year}/${curDate.month}/${curDate.day}/${uid}`)
+      ref(db, `list/${date.year}/${date.month}/${date.day}/${uid}`)
     );
     remove(
       ref(
         db,
-        `chat_list/${curDate.year}/${curDate.month}/${curDate.day}/${uid}`
+        `chat_list/${date.year}/${date.month}/${date.day}/${uid}`
       )
     );
   };
