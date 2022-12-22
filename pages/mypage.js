@@ -5,7 +5,21 @@ import { signOut } from "firebase/auth";
 import { clearUser, nickChange } from "@redux/actions/user_action";
 import { useRouter } from "next/router";
 import { db } from "src/firebase";
-import { ref, onValue, remove, get, off, update, orderByValue, orderByChild, query, equalTo, orderByKey, startAt, endAt } from "firebase/database";
+import {
+  ref,
+  onValue,
+  remove,
+  get,
+  off,
+  update,
+  orderByValue,
+  orderByChild,
+  query,
+  equalTo,
+  orderByKey,
+  startAt,
+  endAt,
+} from "firebase/database";
 import { Modal, Input, message, Menu, Dropdown } from "antd";
 import ListUl from "../src/component/ListUl";
 import { IoSettingsOutline } from "react-icons/io5";
@@ -26,14 +40,19 @@ function Mypage() {
 
   const [listData, setListData] = useState();
   useEffect(() => {
-    const listRef = query(ref( db,`list/${curDate.year}/${curDate.month}`),orderByKey(),startAt('0'),endAt('31'))
+    const listRef = query(
+      ref(db, `list/${curDate.year}/${curDate.month}`),
+      orderByKey(),
+      startAt("0"),
+      endAt("31")
+    );
 
     onValue(listRef, (data) => {
       let listArr = [];
       data.forEach((el) => {
         let vote_check = false;
         const list = el.val();
-        for(const key in list){
+        for (const key in list) {
           if (list[key].vote_user) {
             for (let key2 in list[key].vote_user) {
               if (userInfo) {
@@ -58,8 +77,7 @@ function Mypage() {
     };
   }, [userInfo]);
 
-  const onDel = async (uid,date) => {
-
+  const onDel = async (uid, date) => {
     const listRef = sRef(storage, `images/${uid}`);
     listAll(listRef).then((res) => {
       res.items.forEach((itemRef) => {
@@ -81,29 +99,16 @@ function Mypage() {
     roomId != undefined &&
       remove(ref(db, `user/${userInfo.uid}/room/${roomId}`));
     get(
-      ref(
-        db,
-        `vote_list/${date.year}/${date.month}/${date.day}/${uid}`
-      )
+      ref(db, `vote_list/${date.year}/${date.month}/${date.day}/${uid}`)
     ).then((data) => {
       if (data.val()) {
         remove(
-          ref(
-            db,
-            `vote_list/${date.year}/${date.month}/${date.day}/${uid}`
-          )
+          ref(db, `vote_list/${date.year}/${date.month}/${date.day}/${uid}`)
         );
       }
     });
-    remove(
-      ref(db, `list/${date.year}/${date.month}/${date.day}/${uid}`)
-    );
-    remove(
-      ref(
-        db,
-        `chat_list/${date.year}/${date.month}/${date.day}/${uid}`
-      )
-    );
+    remove(ref(db, `list/${date.year}/${date.month}/${date.day}/${uid}`));
+    remove(ref(db, `chat_list/${date.year}/${date.month}/${date.day}/${uid}`));
   };
 
   //로그아웃
