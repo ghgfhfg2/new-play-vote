@@ -62,11 +62,13 @@ function Regist() {
           vote_user: "",
         });
         set(ref(db, `list_index/${uid}`), {
-          path:`${date.year}/${date.month}/${date.day}`
+          path: `${date.year}/${date.month}/${date.day}`,
         });
       })
       .then(() => {
-        router.push(`/view/id?year=${date.year}/&mon=${date.month}/&day=${date.day}/&uid=${uid}`);
+        router.push(
+          `/view/id?year=${date.year}/&mon=${date.month}/&day=${date.day}/&uid=${uid}`
+        );
       });
   };
 
@@ -96,9 +98,10 @@ function Regist() {
             finish_type: 1,
             finish_count: 2,
             room_open: 2,
+            delete: 1,
             password: "",
             max_vote: 5,
-            add: ["link","img"],
+            add: ["link", "img"],
           }}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
@@ -167,6 +170,12 @@ function Regist() {
             <Radio.Group size="large">
               <Radio.Button value={1}>공개</Radio.Button>
               <Radio.Button value={2}>비공개</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+          <Form.Item label="제안삭제" name="delete">
+            <Radio.Group size="large">
+              <Radio.Button value={1}>삭제가능</Radio.Button>
+              <Radio.Button value={2}>삭제불가</Radio.Button>
             </Radio.Group>
           </Form.Item>
           <Form.Item label="방 공개(목록에서 표시여부)" name="room_open">

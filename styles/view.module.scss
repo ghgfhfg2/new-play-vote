@@ -1,49 +1,63 @@
-@import 'scss-common.scss';
-.view_finish_pop{
-  position: fixed;left: 50%;top:0;
-  width: var(--domWidPx);height: 100%;
+@import "scss-common.scss";
+.view_finish_pop {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  width: var(--domWidPx);
+  height: 100%;
   transform: translateX(-50%);
   z-index: 100;
-  @include flex($j:center);
+  @include flex($j: center);
   animation: fade_in 0.3s forwards;
   opacity: 0;
 }
 @keyframes fade_in {
-  to{opacity: 1;}
+  to {
+    opacity: 1;
+  }
 }
-.view_finish_bg{
-  position: absolute;left: 0;top:0;
-  width: 100%;height: 100%;
-  background-color: rgba(0,0,0,0.3);
-}
-.view_finish_txt{
+.view_finish_bg {
   position: absolute;
-  top: 0;left: 0;width: 100%;
-  padding:10px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.view_finish_txt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
   text-align: center;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   background-color: #111;
   color: #fff;
-  svg{
-    position: relative;top:2px;
+  svg {
+    position: relative;
+    top: 2px;
   }
 }
-.view_finish_con{
+.view_finish_con {
   min-width: 300px;
   max-width: calc(var(--domWidPx) - 40px);
-  position: relative;z-index: 10;
-  padding:1.5rem;padding-top: 55px;padding-bottom: 1rem;
+  position: relative;
+  z-index: 10;
+  padding: 1.5rem;
+  padding-top: 55px;
+  padding-bottom: 1rem;
   border-radius: 15px;
   background-color: #fff;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  dl{
-    @include flex($d:column);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  dl {
+    @include flex($d: column);
     margin-bottom: 0;
   }
-  dd{
+  dd {
     margin-top: 10px;
-    @include flex($d:column);
+    @include flex($d: column);
     margin-bottom: 0;
   }
   animation: fade_up 0.3s forwards;
@@ -51,13 +65,14 @@
   transform: translateY(35px);
 }
 @keyframes fade_up {
-  to{opacity: 1;
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
 }
 
-.view_con_box{
-  @include flex($d:column);
+.view_con_box {
+  @include flex($d: column);
   width: 100%;
   height: 100vh;
   background-color: rgb(53, 57, 75);
@@ -67,49 +82,51 @@
     width: 8px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
     border-radius: 8px;
   }
   &::-webkit-scrollbar-track {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-  }   
+  }
 }
-.ranking_box{
-  width: 100%;  
+.ranking_box {
+  width: 100%;
   z-index: 10;
   position: sticky;
-  top:0;
+  top: 0;
 }
 
-.ranking{
+.ranking {
   width: 100%;
   z-index: 10;
   position: relative;
-  background: rgba(255,255,255,0.95);
+  background: rgba(255, 255, 255, 0.95);
   border-top: 1px solid #ddd;
-  margin-bottom: 0;  
-  @include flex($d:column,$a:flex-start);
-  li{
-    @include flex($a:baseline);
-    padding:7px 1rem;
-    width:100%;
+  margin-bottom: 0;
+  @include flex($d: column, $a: flex-start);
+  li {
+    @include flex($a: baseline);
+    padding: 7px 1rem;
+    width: 100%;
     position: relative;
     border-bottom: 1px solid #ddd;
-    .rank{
+    .rank {
       height: 100%;
       display: inline-block;
       font-size: 15px;
-      font-family: 'Oswald';
+      font-family: "Oswald";
       color: #333;
-      @include flex($j:center);
+      @include flex($j: center);
     }
-    .rank_con{
-      @include flex($j:space-between);
+    .rank_con {
+      @include flex($j: space-between);
       margin-left: 10px;
       font-size: 14px;
     }
-    .ic_target{margin-left: auto;font-size: 11px;
+    .ic_target {
+      margin-left: auto;
+      font-size: 11px;
       @include flex();
       flex-shrink: 0;
       cursor: pointer;
@@ -117,56 +134,72 @@
   }
 }
 
-.btn_fold{
-  border: none;width:auto;
+.btn_fold {
+  border: none;
+  width: auto;
   font-size: 11px;
   padding: 7px 10px;
   margin-left: auto;
-  background: rgba(255,255,255,0.95);
-  @include flex($j:center);
-  svg{font-size: 1rem;}
+  background: rgba(255, 255, 255, 0.95);
+  @include flex($j: center);
+  svg {
+    font-size: 1rem;
+  }
   border-bottom-left-radius: 5px;
 }
 
-.vote_list{
-  width:100%;
+.vote_list {
+  width: 100%;
   max-width: 1000px;
   margin-bottom: 0;
-  flex:1;
-  padding:0 1rem;
+  flex: 1;
+  padding: 0 1rem;
   padding-bottom: 60px;
-  li{
+  li {
     width: 100%;
     margin-top: 2rem;
     @include flex();
   }
-  .profile{
+  .profile {
     margin-right: 10px;
     max-width: 70px;
     text-align: right;
     color: #ddd;
     flex-shrink: 0;
-    @include flex($d:column,$a:flex-end);
+    @include flex($d: column, $a: flex-end);
     font-size: 12px;
-    .date{color: #a1a1a1;font-size: 11px;display: block;margin-top: 5px;}
+    .date {
+      color: #a1a1a1;
+      font-size: 11px;
+      display: block;
+      margin-top: 5px;
+    }
   }
-  .con{
-    flex:1;
+  .con {
+    flex: 1;
     background-color: #fff;
-    @include flex($j:space-between);
-    padding:1rem;  
+    @include flex($j: space-between);
+    padding: 1rem;
     border-radius: 1rem;
-    box-shadow: 0 0 4px rgba(0,0,0,0.2);    
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
   }
 }
 
-.title_box{margin-right: 1rem}
-.btn_box{
+.title_box {
+  margin-right: 1rem;
+}
+.btn_box {
   @include flex();
 }
-.count{margin-right: 5px;font-weight: 500;}
-.empty_box{height: 106px;flex-shrink: 0;}
-.submit_box{
+.count {
+  margin-right: 5px;
+  font-weight: 500;
+}
+.empty_box {
+  height: 106px;
+  flex-shrink: 0;
+}
+.submit_box {
   position: fixed;
   width: 100%;
   padding: 1rem;
@@ -174,167 +207,273 @@
   z-index: 60;
   max-width: 500px;
   display: none;
-  position: fixed;bottom: 0;left:50%;
-  transform: translate(-50%,100%);
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 100%);
   transition: 0.3s;
   background-color: #fff;
-  box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.2);
 }
 
-.img_upload_box{
+.img_upload_box {
   @include flex();
   margin-bottom: 10px;
   align-items: stretch;
 }
-.img_upload_list{
- width: 100%;margin:10px 0;
- border:1px solid #ddd;padding:10px;
- @include flex();
- color: #888;font-size: 12px;
+.img_upload_list {
+  width: 100%;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  padding: 10px;
+  @include flex();
+  color: #888;
+  font-size: 12px;
 }
-.img_upload_list img{margin-right: 10px;max-width: 60px;}
-.img_upload_list span{
+.img_upload_list img {
+  margin-right: 10px;
+  max-width: 60px;
+}
+.img_upload_list span {
   white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
-.img_upload_list button{
-  margin-left: auto;border: 0;background-color: #fff;
-  font-size: 16px;padding:7px;
+.img_upload_list button {
+  margin-left: auto;
+  border: 0;
+  background-color: #fff;
+  font-size: 16px;
+  padding: 7px;
   @include flex();
 }
-.input_file{flex-shrink: 0;margin-left: 10px;
-  @include flex();width: 40%;
+.input_file {
+  flex-shrink: 0;
+  margin-left: 10px;
+  @include flex();
+  width: 40%;
 }
-.input_file input{position: absolute;width: 0;height: 0;overflow: hidden;opacity: 0;}
-.input_file input + label{border: 1px solid #ddd;height: 100%;
-  font-family: 'Dongle';font-size: 20px;
-  @include flex();width: 100%;justify-content: center;cursor: pointer;
+.input_file input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
 }
-.loading_box{
-  position: absolute;left:0;top:0;width: 100%;height: 100%;
-  background: rgba(255,255,255,0.7);
+.input_file input + label {
+  border: 1px solid #ddd;
+  height: 100%;
+  font-family: "Dongle";
+  font-size: 20px;
+  @include flex();
+  width: 100%;
+  justify-content: center;
+  cursor: pointer;
+}
+.loading_box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
   z-index: 100;
-  @include flex($j:center);
+  @include flex($j: center);
 }
 
-.bg_box{
-  width: 100vw;height: 100vh;
-  position: fixed;left:0;top:0;
-  background: rgba(0,0,0,0.4);
+.bg_box {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.4);
   z-index: 50;
 }
-.btn_vote{padding:0;border:none;}
-.ic_vote{font-size: 19px;color:$p-color;margin-top: 5px;}
-.empty{width: 100%;height: 40px;}
-.btn_open_box{
-  width:100%;
+.btn_vote {
+  padding: 0;
+  border: none;
+}
+.ic_vote {
+  font-size: 19px;
+  color: $p-color;
+  margin-top: 5px;
+}
+.empty {
+  width: 100%;
+  height: 40px;
+}
+.btn_open_box {
+  width: 100%;
   max-width: 500px;
-  position: fixed;bottom: 0;left:50%;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
   transform: translateX(-50%);
   @include flex();
-  button{height: 40px;background-color: $p-color;
-    border:none;color:#fff;font-family: 'Dongle';font-size: 20px;}
-  .btn_open{flex:2}
-  .btn_finish{flex:1;background-color: #333;}
-  .finish_txt{
-    @include flex($j:center);
-    flex:1;height:40px;
-    background-color: #333;color:#fff;
+  button {
+    height: 40px;
+    background-color: $p-color;
+    border: none;
+    color: #fff;
+    font-family: "Dongle";
+    font-size: 20px;
+  }
+  .btn_open {
+    flex: 2;
+  }
+  .btn_finish {
+    flex: 1;
+    background-color: #333;
+  }
+  .finish_txt {
+    @include flex($j: center);
+    flex: 1;
+    height: 40px;
+    background-color: #333;
+    color: #fff;
   }
 }
 
-.desc{  
-  @include flex($d:column,$a:flex-start);
-  flex:1;
+.desc {
+  @include flex($d: column, $a: flex-start);
+  flex: 1;
 }
-.vote_link{
+.vote_link {
   margin-top: 10px;
   font-size: 13px;
   width: 100%;
-  a{@include flex($j:center);width: 100%;padding:10px;border: 1px solid #ddd;text-align: center;}
-  svg{margin-left: 5px;position: relative;top:2px}
-
+  a {
+    @include flex($j: center);
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  svg {
+    margin-left: 5px;
+    position: relative;
+    top: 2px;
+  }
 }
-.vote_img{max-width: 100%}
-.room_data{
-  background-color: #fff;position: relative;
-  overflow: hidden;
-  @include flex($a:stretch);
+.vote_tit {
+  font-weight: 600;
 }
-.room_left{
-  @include flex($d:column,$a:flex-start);
-  flex-wrap: wrap;  
+.vote_info {
+  display: block;
+  margin-top: 10px;
+  font-weight: normal;
+  color: #555;
+  font-size: 1rem;
+}
+.btn_vote_remove {
+  background: #e63e44;
+  border-radius: 5px;
+  border: 0;
+  padding: 10px;
+  margin-left: 10px;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
+}
+.btn_vote_remove:hover {
+  background: #c22f34;
+}
+.vote_img {
+  max-width: 100%;
+}
+.room_data {
   background-color: #fff;
-  padding:0.6rem 1rem;
-  h2{font-size: 16px;margin-right: 15px;margin-bottom: 0;font-weight: 700;line-height: 1.4;word-break: break-word;
+  position: relative;
+  overflow: hidden;
+  @include flex($a: stretch);
+}
+.room_left {
+  @include flex($d: column, $a: flex-start);
+  flex-wrap: wrap;
+  background-color: #fff;
+  padding: 0.6rem 1rem;
+  h2 {
+    font-size: 16px;
+    margin-right: 15px;
+    margin-bottom: 0;
+    font-weight: 700;
+    line-height: 1.4;
+    word-break: break-word;
     display: block;
     @include flex();
   }
 }
-.room_info{
+.room_info {
   font-size: 11px;
   flex-shrink: 0;
   color: #888;
   @include flex();
   flex-wrap: wrap;
   margin-bottom: 5px;
-  li{margin-right: 5px;
-    margin-bottom:5px;
+  li {
+    margin-right: 5px;
+    margin-bottom: 5px;
     border-radius: 5px;
-    border:1px solid #ddd;
-    padding:5px;
+    border: 1px solid #ddd;
+    padding: 5px;
     line-height: 1;
     flex-shrink: 0;
   }
 }
-.room_top_right{
+.room_top_right {
   margin-left: auto;
-  @include flex($d:column,$j:space-between);
+  @include flex($d: column, $j: space-between);
   padding: 10px 4px 5px 0;
   position: relative;
 }
-.room_out{
+.room_out {
   cursor: pointer;
-  border:none;background:none;
-  padding:none;
-  @include flex($j:center);
-  svg{font-size: 22px;}
+  border: none;
+  background: none;
+  padding: none;
+  @include flex($j: center);
+  svg {
+    font-size: 22px;
+  }
 }
-.btn_kakao{
+.btn_kakao {
   background: none;
   border: 0;
   padding: 5px;
-
 }
 
-
-
-.right_con{
-  @include flex($d:column,$a:flex-end);
+.right_con {
+  @include flex($d: column, $a: flex-end);
   position: relative;
   flex-shrink: 0;
 }
-.btn_vote_list_view{border: none;
+.btn_vote_list_view {
+  border: none;
   cursor: pointer;
-  padding:0;
-  background:none;
+  padding: 0;
+  background: none;
   @include flex();
   font-size: 11px;
-  svg{margin-right: 4px;font-size: 13px;}
-  &+ul{
-    @include flex($d:column);
+  svg {
+    margin-right: 4px;
+    font-size: 13px;
+  }
+  & + ul {
+    @include flex($d: column);
     position: absolute;
     max-height: 100px;
     overflow: auto;
     z-index: 10;
     background-color: #fff;
-    padding:0.5rem 1rem;
-    bottom: -5px;right: -10px;
+    padding: 0.5rem 1rem;
+    bottom: -5px;
+    right: -10px;
     transform: translateY(100%);
     border-radius: 5px;
-    box-shadow: 0 0 6px rgba(0,0,0,0.2);
-    li{margin:0;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+    li {
+      margin: 0;
       white-space: nowrap;
       text-align: right;
       font-size: 11px;
@@ -342,77 +481,99 @@
   }
 }
 
-.voter_list{
+.voter_list {
   background-color: #fff;
 }
 
-
 //스위치
-.btn_switch{
+.btn_switch {
   position: relative;
   margin-top: -18px;
   margin-left: 1rem;
   z-index: 10;
-  width: 70px;height: 30px;
+  width: 70px;
+  height: 30px;
   @include flex();
   align-items: stretch;
-  button{
-    flex:1;min-width: 0;
-    border:0;
+  button {
+    flex: 1;
+    min-width: 0;
+    border: 0;
     background-color: none;
     position: relative;
-    @include flex($j:center);
+    @include flex($j: center);
   }
 }
-.btn_switch_vote{
+.btn_switch_vote {
   border-top-left-radius: 15px;
   border-bottom-left-radius: 15px;
 }
-.btn_switch_chat{
+.btn_switch_chat {
   border-top-right-radius: 15px;
   border-bottom-right-radius: 15px;
 }
-.btn_switch_ic_new_vote{
-  position: absolute;left: 17px;top:-3px;
-  border-radius: 50%;background-color: rgb(228, 47, 47);color: #fff;
-  @include flex($j:center);
+.btn_switch_ic_new_vote {
+  position: absolute;
+  left: 17px;
+  top: -3px;
+  border-radius: 50%;
+  background-color: rgb(228, 47, 47);
+  color: #fff;
+  @include flex($j: center);
   font-size: 11px;
-  width: 15px;height: 15px;z-index: 10;
+  width: 15px;
+  height: 15px;
+  z-index: 10;
 }
-.btn_switch_ic_new_chat{
-  position: absolute;left: 52px;top:-3px;
-  border-radius: 50%;background-color: rgb(228, 47, 47);color: #fff;
-  @include flex($j:center);
+.btn_switch_ic_new_chat {
+  position: absolute;
+  left: 52px;
+  top: -3px;
+  border-radius: 50%;
+  background-color: rgb(228, 47, 47);
+  color: #fff;
+  @include flex($j: center);
   font-size: 11px;
-  width: 15px;height: 15px;z-index: 10;
+  width: 15px;
+  height: 15px;
+  z-index: 10;
 }
 
 // 채팅
-.room_chat_box{
-  width: 100%;height: calc(100% + 40px);
+.room_chat_box {
+  width: 100%;
+  height: calc(100% + 40px);
   padding: 0 1rem;
   overflow: auto;
-  form{
+  form {
     @include flex();
     align-items: stretch;
     position: absolute;
-    bottom: 0;left: 0;
+    bottom: 0;
+    left: 0;
     width: 100%;
   }
   &::-webkit-scrollbar {
     width: 8px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255, 255, 255, 0.5);
     border-radius: 8px;
   }
   &::-webkit-scrollbar-track {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-  }  
+  }
 }
-.room_chat_list{
-  flex:1
+.room_chat_list {
+  flex: 1;
 }
-.room_chat_input{margin-bottom: 0;flex:1;height: 100%;}
-.room_chat_textArea{height: 50px !important;resize: none;}
+.room_chat_input {
+  margin-bottom: 0;
+  flex: 1;
+  height: 100%;
+}
+.room_chat_textArea {
+  height: 50px !important;
+  resize: none;
+}

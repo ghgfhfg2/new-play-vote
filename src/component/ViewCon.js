@@ -12,6 +12,7 @@ import {
   query,
   orderByChild,
   limitToLast,
+  remove,
 } from "firebase/database";
 import { getFormatDate } from "@component/CommonFunc";
 import uuid from "react-uuid";
@@ -139,6 +140,7 @@ function ViewCon({ uid }) {
 
       if (userInfo) {
         arr.forEach((list) => {
+          if (!list.user_uid) return;
           let check = list.user_uid.find((user) => {
             return user.uid === userInfo.uid;
           });
@@ -348,6 +350,7 @@ function ViewCon({ uid }) {
   };
 
   const onSubmit = (values) => {
+    values.info = values.info || "";
     values.upload = "";
     const date = getFormatDate(new Date());
     const uid_ = uuid();
@@ -356,8 +359,8 @@ function ViewCon({ uid }) {
       date,
       user_name: userInfo.displayName,
       vote_user: userInfo.uid,
-      user_uid: [{ uid: userInfo.uid, name: userInfo.displayName }],
-      vote_count: 1,
+      //user_uid: [{ uid: userInfo.uid, name: userInfo.displayName }],
+      vote_count: 0,
     };
     set(dRef(db, `vote_list/${queryPath}/${uid_}`), {
       ...val,
@@ -368,6 +371,7 @@ function ViewCon({ uid }) {
 
   const onVote = (uid_, user_uid, vote_userId, already) => {
     let uidArr = [];
+    user_uid = user_uid ? user_uid : [];
     user_uid.map((user) => {
       uidArr.push(user.uid);
     });
@@ -410,32 +414,31 @@ function ViewCon({ uid }) {
         }
       );
     } else if (already) {
-      if (userInfo.uid === vote_userId) {
-        message.error("본인제안은 투표 취소할 수 없습니다.");
-        return;
-      } else {
-        let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
-        update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
-          user_uid: [...newUser],
-        });
-        runTransaction(
-          dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
-          (pre) => {
-            return pre ? --pre : 0;
-          }
-        );
+      // if (userInfo.uid === vote_userId) {
+      //   message.error("본인제안은 투표 취소할 수 없습니다.");
+      //   return;
+      // }
+      let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+        user_uid: [...newUser],
+      });
+      runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
+        (pre) => {
+          return pre ? --pre : 0;
+        }
+      );
 
-        runTransaction(
-          dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
-          (pre) => {
-            let res = {
-              ...pre,
-              vote_count: pre && pre.vote_count ? pre.vote_count - 1 : 0,
-            };
-            return res;
-          }
-        );
-      }
+      runTransaction(
+        dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
+        (pre) => {
+          let res = {
+            ...pre,
+            vote_count: pre && pre.vote_count ? pre.vote_count - 1 : 0,
+          };
+          return res;
+        }
+      );
     } else {
       update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
         user_uid: [
@@ -465,6 +468,17 @@ function ViewCon({ uid }) {
     if (roomData.finish_type === 2 && voteCount >= roomData.finish_count) {
       onVoteFinish();
     }
+  };
+
+  const onVoteRemove = (vuid) => {
+    remove(dRef(db, `vote_list/${queryPath}/${vuid}`));
+    runTransaction(
+      dRef(db, `list/${queryPath}/${userInfo.uid}/submit_count`),
+      (pre) => {
+        return pre > 0 ? --pre : 0;
+      }
+    );
+    message.success("제안이 취소되었습니다.");
   };
 
   const submitBox = useRef();
@@ -523,7 +537,7 @@ function ViewCon({ uid }) {
   };
 
   const onOutView = () => {
-    router.push('/mypage');
+    router.push("/mypage");
   };
 
   const onVoteFinish = () => {
@@ -652,6 +666,7 @@ function ViewCon({ uid }) {
             voteListData={voteListData}
             listRef={listRef}
             voterRef={voterRef}
+            onVoteRemove={onVoteRemove}
             viewVoterList={viewVoterList}
             onVote={onVote}
           />

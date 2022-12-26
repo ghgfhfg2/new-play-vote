@@ -134,7 +134,7 @@
   height: 100%;
   display: inline-block;
   font-size: 15px;
-  font-family: 'Oswald';
+  font-family: "Oswald";
   color: #333;
   display: flex;
   justify-content: center;
@@ -312,7 +312,7 @@
 .input_file input + label {
   border: 1px solid #ddd;
   height: 100%;
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 20px;
   display: flex;
   justify-content: flex-start;
@@ -374,7 +374,7 @@
   background-color: #1890ff;
   border: none;
   color: #fff;
-  font-family: 'Dongle';
+  font-family: "Dongle";
   font-size: 20px; }
 
 .btn_open_box .btn_open {
@@ -420,6 +420,29 @@
   margin-left: 5px;
   position: relative;
   top: 2px; }
+
+.vote_tit {
+  font-weight: 600; }
+
+.vote_info {
+  display: block;
+  margin-top: 10px;
+  font-weight: normal;
+  color: #555;
+  font-size: 1rem; }
+
+.btn_vote_remove {
+  background: #e63e44;
+  border-radius: 5px;
+  border: 0;
+  padding: 10px;
+  margin-left: 10px;
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3); }
+
+.btn_vote_remove:hover {
+  background: #c22f34; }
 
 .vote_img {
   max-width: 100%; }
