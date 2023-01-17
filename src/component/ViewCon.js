@@ -137,14 +137,20 @@ function ViewCon({ uid }) {
           uid: el.key,
         });
       });
-
       if (userInfo) {
         arr.forEach((list) => {
-          if (!list.user_uid) return;
-          let check = list.user_uid.find((user) => {
-            return user.uid === userInfo.uid;
-          });
+          let check =
+            list.user_uid &&
+            list.user_uid.find((user) => {
+              return user.uid === userInfo.uid;
+            });
           list.already_check = check ? true : false;
+          let disCheck =
+            list.dis_user_uid &&
+            list.dis_user_uid.find((user) => {
+              return user.uid === userInfo.uid;
+            });
+          list.dis_already_check = disCheck ? true : false;
         });
       }
       arr.sort((a, b) => {
@@ -154,7 +160,10 @@ function ViewCon({ uid }) {
       let rankArr = arr.concat();
       rankArr = rankArr
         .sort((a, b) => {
-          return b.vote_count - a.vote_count;
+          let aCount = a.vote_count - a.dis_vote_count;
+          let bCount = b.vote_count - b.dis_vote_count;
+          console.log(aCount, bCount);
+          return bCount - aCount;
         })
         .slice(0, 3);
       setRanking(rankArr);
@@ -470,6 +479,105 @@ function ViewCon({ uid }) {
     }
   };
 
+  const onDisVote = (uid_, user_uid, vote_userId, already) => {
+    console.log(already);
+    let uidArr = [];
+    user_uid = user_uid ? user_uid : [];
+    user_uid.map((user) => {
+      uidArr.push(user.uid);
+    });
+
+    if (roomData.cancel === 2) {
+      if (uidArr.includes(userInfo.uid)) {
+        message.error("이미 투표한 의견입니다.");
+        return;
+      }
+      if (
+        roomData.type === 1 &&
+        roomData.dis_vote_user &&
+        roomData.dis_vote_user[userInfo.uid] &&
+        roomData.dis_vote_user[userInfo.uid].vote_count >= 1
+      ) {
+        message.error("단일투표 입니다.");
+        return;
+      }
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+        dis_user_uid: [
+          ...user_uid,
+          { uid: userInfo.uid, name: userInfo.displayName },
+        ],
+      });
+      runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/dis_vote_count`),
+        (pre) => {
+          return pre ? ++pre : 1;
+        }
+      );
+
+      runTransaction(
+        dRef(db, `list/${queryPath}/dis_vote_user/${userInfo.uid}`),
+        (pre) => {
+          let res = {
+            ...pre,
+            vote_count: pre && pre.vote_count ? pre.vote_count + 1 : 1,
+          };
+          return res;
+        }
+      );
+    } else if (already) {
+      // if (userInfo.uid === vote_userId) {
+      //   message.error("본인제안은 투표 취소할 수 없습니다.");
+      //   return;
+      // }
+      let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+        dis_user_uid: [...newUser],
+      });
+      runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/dis_vote_count`),
+        (pre) => {
+          return pre ? --pre : 0;
+        }
+      );
+
+      runTransaction(
+        dRef(db, `list/${queryPath}/dis_vote_user/${userInfo.uid}`),
+        (pre) => {
+          let res = {
+            ...pre,
+            vote_count: pre && pre.vote_count ? pre.vote_count - 1 : 0,
+          };
+          return res;
+        }
+      );
+    } else {
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+        dis_user_uid: [
+          ...user_uid,
+          { uid: userInfo.uid, name: userInfo.displayName },
+        ],
+      });
+      let voteCount;
+      runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/dis_vote_count`),
+        (pre) => {
+          voteCount = pre ? ++pre : 1;
+          return voteCount;
+        }
+      );
+      runTransaction(
+        dRef(db, `list/${queryPath}/dis_vote_user/${userInfo.uid}`),
+        (pre) => {
+          let res = {
+            ...pre,
+            vote_count: pre && pre.vote_count ? pre.vote_count + 1 : 1,
+          };
+          return res;
+        }
+      );
+    }
+  };
+
   const onVoteRemove = (vuid) => {
     remove(dRef(db, `vote_list/${queryPath}/${vuid}`));
     runTransaction(
@@ -669,6 +777,7 @@ function ViewCon({ uid }) {
             onVoteRemove={onVoteRemove}
             viewVoterList={viewVoterList}
             onVote={onVote}
+            onDisVote={onDisVote}
           />
         )}
 

@@ -11,7 +11,6 @@ const { Search } = Input;
 export default function View() {
   const userInfo = useSelector((state) => state.user.currentUser);
   const router = useRouter();
-  console.log(router)
   const uid = router.query.uid;
   const queryPath = `${router.query.year}/${router.query.mon}/${router.query.day}/${router.query.uid}`;
 
