@@ -9,6 +9,7 @@
     "rewrites": [
       {
         "source": "/**",
+        "destination": "/index.html",
         "dynamicLinks": true
         // "destination": "/view/[id].html",
         // "regex": "^/view/([^/]+?)(?:/)?$"

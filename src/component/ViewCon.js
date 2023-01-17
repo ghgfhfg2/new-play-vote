@@ -160,9 +160,13 @@ function ViewCon({ uid }) {
       let rankArr = arr.concat();
       rankArr = rankArr
         .sort((a, b) => {
-          let aCount = a.vote_count - a.dis_vote_count;
-          let bCount = b.vote_count - b.dis_vote_count;
-          console.log(aCount, bCount);
+          let a_vote = a.vote_count || 0;
+          let a_dis_vote = a.dis_vote_count || 0;
+          let b_vote = b.vote_count || 0;
+          let b_dis_vote = b.dis_vote_count || 0;
+          let aCount = a_vote - a_dis_vote;
+          let bCount = b_vote - b_dis_vote;
+          if (aCount) console.log(aCount, bCount);
           return bCount - aCount;
         })
         .slice(0, 3);
