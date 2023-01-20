@@ -119,6 +119,12 @@ function ViewCon({ uid }) {
     });
   }, [chatList]);
 
+  const [disVoteCount, setDisVoteCount] = useState();
+  const [firstJoin, setFirstJoin] = useState(false);
+  useEffect(() => {
+    setFirstJoin(true);
+  }, []);
+
   useEffect(() => {
     let roomRef = dRef(db, `list/${queryPath}`);
     onValue(roomRef, (data) => {
@@ -126,6 +132,10 @@ function ViewCon({ uid }) {
         setFinishVote(true);
       }
       setRoomData(data.val());
+      userInfo.uid &&
+        data.val()[userInfo.uid] &&
+        data.val()[userInfo.uid].disvote_count != undefined &&
+        setDisVoteCount(data.val()[userInfo.uid].disvote_count);
     });
 
     let voteRef = dRef(db, `vote_list/${queryPath}`);
@@ -175,6 +185,12 @@ function ViewCon({ uid }) {
       off(voteRef);
     };
   }, [userInfo]);
+
+  useEffect(() => {
+    if (disVoteCount > 0 && firstJoin) {
+      message.success("반대투표로 인해 제안이 취소되었습니다.");
+    }
+  }, [disVoteCount]);
 
   useEffect(() => {
     let lastIdx = voteListData?.length;
@@ -354,6 +370,10 @@ function ViewCon({ uid }) {
 
         let res = {
           ...pre,
+          disvote_count: {
+            count: 0,
+            title: "",
+          },
           submit_count: pre && pre.submit_count ? pre.submit_count + 1 : 1,
         };
         return res;
@@ -483,8 +503,7 @@ function ViewCon({ uid }) {
     }
   };
 
-  const onDisVote = (uid_, user_uid, vote_userId, already) => {
-    console.log(already);
+  const onDisVote = (uid_, user_uid, vote_userId, already, title) => {
     let uidArr = [];
     user_uid = user_uid ? user_uid : [];
     user_uid.map((user) => {
@@ -561,12 +580,12 @@ function ViewCon({ uid }) {
           { uid: userInfo.uid, name: userInfo.displayName },
         ],
       });
-      let voteCount;
+      let disVoteCnt;
       runTransaction(
         dRef(db, `vote_list/${queryPath}/${uid_}/dis_vote_count`),
         (pre) => {
-          voteCount = pre ? ++pre : 1;
-          return voteCount;
+          disVoteCnt = pre ? ++pre : 1;
+          return disVoteCnt;
         }
       );
       runTransaction(
@@ -580,6 +599,15 @@ function ViewCon({ uid }) {
         }
       );
     }
+    if (roomData.finish_type === 2 && disVoteCnt >= roomData.finish_count) {
+      runTransaction(
+        dRef(db, `list/${queryPath}/${vote_userId}/disvote_count`),
+        (pre) => {
+          return pre + 1;
+        }
+      );
+      remove(dRef(db, `vote_list/${queryPath}/${uid_}`));
+    }
   };
 
   const onVoteRemove = (vuid) => {
@@ -590,7 +618,7 @@ function ViewCon({ uid }) {
         return pre > 0 ? --pre : 0;
       }
     );
-    message.success("제안이 취소되었습니다.");
+    message.success(`제안이 취소되었습니다.`);
   };
 
   const submitBox = useRef();

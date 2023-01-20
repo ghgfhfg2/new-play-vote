@@ -111,7 +111,8 @@ function RoomVote({
                             el.uid,
                             el.dis_user_uid,
                             el.vote_user,
-                            el.dis_already_check
+                            el.dis_already_check,
+                            el.title
                           );
                         }}
                       >
