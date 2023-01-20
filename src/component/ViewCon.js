@@ -120,10 +120,6 @@ function ViewCon({ uid }) {
   }, [chatList]);
 
   const [disVoteCount, setDisVoteCount] = useState();
-  const [firstJoin, setFirstJoin] = useState(false);
-  useEffect(() => {
-    setFirstJoin(true);
-  }, []);
 
   useEffect(() => {
     let roomRef = dRef(db, `list/${queryPath}`);
@@ -186,9 +182,16 @@ function ViewCon({ uid }) {
     };
   }, [userInfo]);
 
+  let timer;
   useEffect(() => {
-    if (disVoteCount > 0 && firstJoin) {
-      message.success("반대투표로 인해 제안이 취소되었습니다.");
+    if (disVoteCount?.alert && !timer) {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(() => {
+        timer = false;
+        message.success("반대투표로 인해 제안이 취소되었습니다.");
+      }, 100);
     }
   }, [disVoteCount]);
 
@@ -372,6 +375,7 @@ function ViewCon({ uid }) {
           ...pre,
           disvote_count: {
             count: 0,
+            alert: false,
             title: "",
           },
           submit_count: pre && pre.submit_count ? pre.submit_count + 1 : 1,
@@ -603,9 +607,16 @@ function ViewCon({ uid }) {
       runTransaction(
         dRef(db, `list/${queryPath}/${vote_userId}/disvote_count`),
         (pre) => {
-          return pre + 1;
+          ++pre.count;
+          pre.alert = true;
+          return pre;
         }
       );
+      setTimeout(() => {
+        update(dRef(db, `list/${queryPath}/${vote_userId}/disvote_count`), {
+          alert: false,
+        });
+      }, 100);
       remove(dRef(db, `vote_list/${queryPath}/${uid_}`));
     }
   };
