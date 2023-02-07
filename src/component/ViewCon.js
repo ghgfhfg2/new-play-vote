@@ -321,7 +321,7 @@ function ViewCon({ uid }) {
             let file = el.file;
             const metadata = { contentType: file.type };
             const storageRef = sRef(storage, `images/${uid}/${el.fileName}`);
-            imageResize(file, 400)
+            imageResize(file, 1000)
               .then((data) => {
                 file = dataURLtoFile(data, file.name);
               })
