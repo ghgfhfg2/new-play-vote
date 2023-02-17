@@ -5,6 +5,7 @@ import { db } from "src/firebase";
 import {
   ref as dRef,
   set,
+  get,
   onValue,
   off,
   runTransaction,
@@ -18,7 +19,8 @@ import { getFormatDate } from "@component/CommonFunc";
 import uuid from "react-uuid";
 import style from "styles/view.module.css";
 import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
-import { MdOutlineHowToVote, MdHowToVote } from "react-icons/md";
+import { MdOutlineHowToVote, MdHowToVote, MdTimer } from "react-icons/md";
+import Countdown from "react-countdown";
 
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { BiTargetLock } from "react-icons/bi";
@@ -59,7 +61,7 @@ function ViewCon({ uid }) {
   const listRef = useRef([]);
   const voterRef = useRef([]);
   const router = useRouter();
-  const queryPath = `${router.query.year}/${router.query.mon}/${router.query.day}/${router.query.uid}`;
+  const queryPath = `${router.query.year}/${router.query.mon}/${router.query.day}/${router.query.uid}/`;
 
   const userInfo = useSelector((state) => state.user.currentUser);
   const [roomData, setRoomData] = useState();
@@ -68,6 +70,7 @@ function ViewCon({ uid }) {
   const [listLength, setListLength] = useState();
 
   const [ranking, setRanking] = useState([]);
+  const [winnerData, setWinnerData] = useState();
 
   const [chatList, setChatList] = useState([]);
   const [chatLength, setChatLength] = useState();
@@ -133,13 +136,16 @@ function ViewCon({ uid }) {
         data.val()[userInfo.uid].disvote_count != undefined &&
         setDisVoteCount(data.val()[userInfo.uid].disvote_count);
     });
-
     let voteRef = dRef(db, `vote_list/${queryPath}`);
     onValue(voteRef, (data) => {
       let arr = [];
       data.forEach((el) => {
+        let el_vote = el.val().vote_count || 0;
+        let el_dis_vote = el.val().dis_vote_count || 0;
+        let elCount = el_vote - el_dis_vote;
         arr.push({
           ...el.val(),
+          winner_point: elCount,
           uid: el.key,
         });
       });
@@ -166,13 +172,7 @@ function ViewCon({ uid }) {
       let rankArr = arr.concat();
       rankArr = rankArr
         .sort((a, b) => {
-          let a_vote = a.vote_count || 0;
-          let a_dis_vote = a.dis_vote_count || 0;
-          let b_vote = b.vote_count || 0;
-          let b_dis_vote = b.dis_vote_count || 0;
-          let aCount = a_vote - a_dis_vote;
-          let bCount = b_vote - b_dis_vote;
-          return bCount - aCount;
+          return b.winner_point - a.winner_point;
         })
         .slice(0, 3);
       setRanking(rankArr);
@@ -405,7 +405,13 @@ function ViewCon({ uid }) {
     setSubmitLoading(false);
   };
 
-  const onVote = (uid_, user_uid, vote_userId, already) => {
+  const onVote = async (uid_, user_uid, vote_userId, already) => {
+    const finishCheck = await get(dRef(db, `list/${queryPath}/ing`)).then(
+      (data) => {
+        return data.val();
+      }
+    );
+    if (!finishCheck) return;
     let uidArr = [];
     user_uid = user_uid ? user_uid : [];
     user_uid.map((user) => {
@@ -483,8 +489,7 @@ function ViewCon({ uid }) {
           { uid: userInfo.uid, name: userInfo.displayName },
         ],
       });
-      let voteCount;
-      runTransaction(
+      let voteCount = await runTransaction(
         dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
         (pre) => {
           voteCount = pre ? ++pre : 1;
@@ -501,9 +506,14 @@ function ViewCon({ uid }) {
           return res;
         }
       );
-    }
-    if (roomData.finish_type === 2 && voteCount >= roomData.finish_count) {
-      onVoteFinish();
+
+      if (
+        roomData.finish_type === 2 &&
+        voteCount.snapshot._node.value_ >= roomData.finish_count
+      ) {
+        console.log("finish");
+        onVoteFinish();
+      }
     }
   };
 
@@ -691,9 +701,22 @@ function ViewCon({ uid }) {
     router.push("/mypage");
   };
 
-  const onVoteFinish = () => {
+  const onVoteFinish = async () => {
+    let winner;
+    if (ranking.length >= 1) {
+      let overlap = [ranking[0]];
+      ranking.forEach((el, idx) => {
+        if (idx > 0 && overlap[0].winner_point == el.winner_point) {
+          overlap.push(el);
+        }
+      });
+      const random = Math.floor(Math.random() * ranking.length);
+      winner = overlap[random];
+      console.log(winner);
+      update(dRef(db, `list/${queryPath}`), { winner });
+    }
+    setFinishVote(true);
     runTransaction(dRef(db, `list/${queryPath}/ing`), (pre) => {
-      setFinishVote(true);
       return false;
     });
     message.success("투표가 종료되었습니다.");
@@ -725,14 +748,21 @@ function ViewCon({ uid }) {
     ref.style.display = ref.style.display === "none" ? "flex" : "none";
   };
 
+  const onTimeOver = () => {
+    onVoteFinish();
+  };
+
   return (
     <>
       <div
         className={style.view_con_box}
         style={{ "--domWidPx": `${domWid}px` }}
       >
-        {ranking.length > 0 && finishVote && (
-          <WinnerModal ranking={ranking} finishPopClose={finishPopClose} />
+        {roomData?.winner && finishVote && (
+          <WinnerModal
+            winner={roomData.winner}
+            finishPopClose={finishPopClose}
+          />
         )}
         <div className={style.ranking_box}>
           {roomData && (
@@ -776,6 +806,7 @@ function ViewCon({ uid }) {
               </>
             )}
           </button>
+          {/* 투표,채팅 변경 시작 */}
           <div className={style.btn_switch}>
             <button
               type="button"
@@ -808,6 +839,18 @@ function ViewCon({ uid }) {
               {roomType ? <BsChatDots /> : <BsChatDotsFill />}
             </button>
           </div>
+          {/* 투표,채팅 변경 끝 */}
+          {roomData?.timer_type == 2 && (
+            <div className={style.count_down}>
+              <MdTimer style={{ marginRight: "5px" }} />
+              {
+                <Countdown
+                  date={new Date(roomData?.endTime)}
+                  onComplete={onTimeOver}
+                />
+              }
+            </div>
+          )}
         </div>
         {roomType && (
           <RoomVote

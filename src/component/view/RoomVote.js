@@ -72,32 +72,30 @@ function RoomVote({
                 )}
               </div>
               <div className={style.right_con}>
-                {roomData && roomData.ing && (
-                  <div className={style.btn_box}>
-                    <span className={style.count}>
-                      {el.vote_count > 0 ? <>{el.vote_count}</> : `0`}
-                    </span>
-                    {userInfo && (
-                      <Button
-                        className={style.btn_vote}
-                        onClick={() => {
-                          onVote(
-                            el.uid,
-                            el.user_uid,
-                            el.vote_user,
-                            el.already_check
-                          );
-                        }}
-                      >
-                        {el.already_check ? (
-                          <AiTwotoneLike className={style.ic_vote} />
-                        ) : (
-                          <AiOutlineLike className={style.ic_vote} />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                )}
+                <div className={style.btn_box}>
+                  <span className={style.count}>
+                    {el.vote_count > 0 ? <>{el.vote_count}</> : `0`}
+                  </span>
+                  {userInfo && (
+                    <Button
+                      className={style.btn_vote}
+                      onClick={() => {
+                        onVote(
+                          el.uid,
+                          el.user_uid,
+                          el.vote_user,
+                          el.already_check
+                        );
+                      }}
+                    >
+                      {el.already_check ? (
+                        <AiTwotoneLike className={style.ic_vote} />
+                      ) : (
+                        <AiOutlineLike className={style.ic_vote} />
+                      )}
+                    </Button>
+                  )}
+                </div>
                 {roomData && roomData.ing && (
                   <div className={style.btn_box}>
                     <span className={style.count}>

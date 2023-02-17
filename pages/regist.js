@@ -1,11 +1,20 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { Form, Input, InputNumber, Button, Checkbox, Radio } from "antd";
+import {
+  Form,
+  Input,
+  InputNumber,
+  Button,
+  Checkbox,
+  Radio,
+  message,
+} from "antd";
 import { db } from "src/firebase";
 import { ref, set, runTransaction, update } from "firebase/database";
 import uuid from "react-uuid";
 import { getFormatDate } from "@component/CommonFunc";
 import { useRouter } from "next/router";
+import moment from "moment";
 
 function Regist() {
   const router = useRouter();
@@ -14,7 +23,15 @@ function Regist() {
   const onFinish = (values) => {
     const date = getFormatDate(new Date());
     const uid = uuid();
-
+    if (values.timer_type == 2) {
+      if (!values.timer_time) {
+        message.error("투표종료 제한시간을 입력해주세요.");
+        return;
+      }
+      values.endTime = moment()
+        .add(values.timer_time, "minute")
+        .format("YYYY MM DD HH:mm:ss");
+    }
     if (values.tag) {
       const tagArr = values.tag.split(",");
       let tagObj = {};
@@ -85,6 +102,15 @@ function Regist() {
     }
   };
 
+  const [isFinishTime, setIsFinishTime] = useState(false);
+  const handleTimerType = (e) => {
+    if (e.target.value == 2) {
+      setIsFinishTime(true);
+    } else {
+      setIsFinishTime(false);
+    }
+  };
+
   return (
     <>
       <div className="regist_box">
@@ -96,6 +122,7 @@ function Regist() {
             voter: 2,
             cancel: 1,
             finish_type: 1,
+            timer_type: 1,
             finish_count: 2,
             room_open: 2,
             delete: 1,
@@ -159,6 +186,25 @@ function Regist() {
             <Form.Item label="투표수 지정" name="finish_count">
               <InputNumber min={2} />
             </Form.Item>
+          )}
+          <Form.Item label="투표종료 시간제한" name="timer_type">
+            <Radio.Group size="large" onChange={handleTimerType}>
+              <Radio.Button value={1}>무제한</Radio.Button>
+              <Radio.Button value={2}>시간지정</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+          {isFinishTime && (
+            <>
+              <Form.Item label="제한시간(분)" name="timer_time">
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: "12px", marginBottom: "5px" }}>
+                    ※ 타임오버시 랭킹1위 제안으로 선정, 1위가 중복일때는
+                    랜덤선택
+                  </span>
+                  <InputNumber min={1} />
+                </div>
+              </Form.Item>
+            </>
           )}
           <Form.Item label="제안자공개" name="sender">
             <Radio.Group size="large">

@@ -32,6 +32,11 @@ function RoomInfo({ roomData, onOutView, roomUid }) {
               ? `방장종료`
               : `${roomData.finish_count}표 달성시 종료`}
           </li>
+          <li>
+            {roomData.timer_type === 1
+              ? `시간 무제한`
+              : `${roomData.timer_time}분 제한`}
+          </li>
           {roomData.add && roomData.add.includes("link") && <li>링크</li>}
           {roomData.add && roomData.add.includes("img") && <li>이미지</li>}
         </ul>
