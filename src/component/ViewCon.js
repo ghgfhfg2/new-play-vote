@@ -512,6 +512,11 @@ function ViewCon({ uid }) {
         voteCount.snapshot._node.value_ >= roomData.finish_count
       ) {
         console.log("finish");
+        console.log(
+          roomData.finish_type,
+          voteCount.snapshot._node.value_,
+          roomData.finish_count
+        );
         onVoteFinish();
       }
     }
