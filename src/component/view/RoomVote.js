@@ -96,32 +96,30 @@ function RoomVote({
                     </Button>
                   )}
                 </div>
-                {roomData && roomData.ing && (
-                  <div className={style.btn_box}>
-                    <span className={style.count}>
-                      {el.dis_vote_count > 0 ? <>{el.dis_vote_count}</> : `0`}
-                    </span>
-                    {userInfo && (
-                      <Button
-                        className={style.btn_vote}
-                        onClick={() => {
-                          onDisVote(
-                            el.uid,
-                            el.dis_user_uid,
-                            el.vote_user,
-                            el.dis_already_check
-                          );
-                        }}
-                      >
-                        {el.dis_already_check ? (
-                          <AiFillDislike className={style.ic_vote2} />
-                        ) : (
-                          <AiOutlineDislike className={style.ic_vote2} />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                )}
+                <div className={style.btn_box}>
+                  <span className={style.count}>
+                    {el.dis_vote_count > 0 ? <>{el.dis_vote_count}</> : `0`}
+                  </span>
+                  {userInfo && (
+                    <Button
+                      className={style.btn_vote}
+                      onClick={() => {
+                        onDisVote(
+                          el.uid,
+                          el.dis_user_uid,
+                          el.vote_user,
+                          el.dis_already_check
+                        );
+                      }}
+                    >
+                      {el.dis_already_check ? (
+                        <AiFillDislike className={style.ic_vote2} />
+                      ) : (
+                        <AiOutlineDislike className={style.ic_vote2} />
+                      )}
+                    </Button>
+                  )}
+                </div>
                 {roomData && roomData.voter === 1 && el.user_uid && (
                   <>
                     <button

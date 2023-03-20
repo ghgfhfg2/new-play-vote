@@ -174,7 +174,7 @@ function ViewCon({ uid }) {
         .sort((a, b) => {
           return b.winner_point - a.winner_point;
         })
-        .slice(0, 3);
+        .slice(0, 5);
       setRanking(rankArr);
     });
     return () => {
@@ -405,13 +405,17 @@ function ViewCon({ uid }) {
     setSubmitLoading(false);
   };
 
+  //좋아요 투표
   const onVote = async (uid_, user_uid, vote_userId, already) => {
     const finishCheck = await get(dRef(db, `list/${queryPath}/ing`)).then(
       (data) => {
         return data.val();
       }
     );
-    if (!finishCheck) return;
+    if (!finishCheck) {
+      message.info("종료된 투표 입니다.");
+      return;
+    }
     let uidArr = [];
     user_uid = user_uid ? user_uid : [];
     user_uid.map((user) => {
@@ -456,11 +460,6 @@ function ViewCon({ uid }) {
         }
       );
     } else if (already) {
-      // 본인 자동투표시
-      // if (userInfo.uid === vote_userId) {
-      //   message.error("본인제안은 투표 취소할 수 없습니다.");
-      //   return;
-      // }
       let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
       update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
         user_uid: [...newUser],
@@ -512,17 +511,21 @@ function ViewCon({ uid }) {
         voteCount.snapshot._node.value_ >= roomData.finish_count
       ) {
         console.log("finish");
-        console.log(
-          roomData.finish_type,
-          voteCount.snapshot._node.value_,
-          roomData.finish_count
-        );
         onVoteFinish();
       }
     }
   };
 
-  const onDisVote = (uid_, user_uid, vote_userId, already, title) => {
+  const onDisVote = async (uid_, user_uid, vote_userId, already, title) => {
+    const finishCheck = await get(dRef(db, `list/${queryPath}/ing`)).then(
+      (data) => {
+        return data.val();
+      }
+    );
+    if (!finishCheck) {
+      message.info("종료된 투표 입니다.");
+      return;
+    }
     let uidArr = [];
     user_uid = user_uid ? user_uid : [];
     user_uid.map((user) => {
@@ -782,6 +785,9 @@ function ViewCon({ uid }) {
                     <div className={style.desc}>
                       <span className={style.vote_tit}>{el.title}</span>
                     </div>
+                    <span style={{ marginLeft: "3px" }}>
+                      ({el.winner_point}점)
+                    </span>
                   </div>
                   <div className={style.ic_target}>
                     <BiTargetLock
