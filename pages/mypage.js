@@ -50,17 +50,20 @@ function Mypage() {
     onValue(listRef, (data) => {
       let listArr = [];
       data.forEach((el) => {
-        let vote_check = false;
         const list = el.val();
+        if (!userInfo) return;
         for (const key in list) {
+          let vote_check = false;
           if (list[key].vote_user) {
             for (let key2 in list[key].vote_user) {
-              if (userInfo) {
-                vote_check = userInfo.uid === key2 ? true : false;
-              }
+              vote_check = userInfo.uid === key2 ? true : false;
             }
           }
-          if ((userInfo && list[key].host === userInfo.uid) || vote_check) {
+          if (
+            list[key].host === userInfo.uid ||
+            vote_check ||
+            list[key][userInfo.uid]
+          ) {
             listArr.push({ ...list[key], uid: key });
           }
         }
@@ -70,6 +73,11 @@ function Mypage() {
         let tagArr = Object.keys(el.tag);
         el.tag = tagArr;
       });
+
+      listArr = listArr.sort((a, b) => {
+        return b.date.timestamp - a.date.timestamp;
+      });
+      console.log("listArr", listArr);
       setListData(listArr);
     });
     return () => {
