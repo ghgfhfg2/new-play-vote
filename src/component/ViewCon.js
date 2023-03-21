@@ -506,17 +506,25 @@ function ViewCon({ uid }) {
         }
       );
 
+      console.log(
+        roomData.finish_type,
+        voteCount.snapshot._node.value_,
+        roomData.finish_count
+      );
+
       if (
         roomData.finish_type === 2 &&
         voteCount.snapshot._node.value_ >= roomData.finish_count
       ) {
         console.log("finish");
-        onVoteFinish();
+        const curVote = ranking.filter((el) => el.uid == uid_);
+        onVoteFinish(curVote[0]);
       }
     }
   };
 
   const onDisVote = async (uid_, user_uid, vote_userId, already, title) => {
+    let disVoteCnt = 0;
     const finishCheck = await get(dRef(db, `list/${queryPath}/ing`)).then(
       (data) => {
         return data.val();
@@ -552,7 +560,7 @@ function ViewCon({ uid }) {
           { uid: userInfo.uid, name: userInfo.displayName },
         ],
       });
-      runTransaction(
+      disVoteCnt = await runTransaction(
         dRef(db, `vote_list/${queryPath}/${uid_}/dis_vote_count`),
         (pre) => {
           return pre ? ++pre : 1;
@@ -585,7 +593,7 @@ function ViewCon({ uid }) {
         }
       );
 
-      runTransaction(
+      disVoteCnt = await runTransaction(
         dRef(db, `list/${queryPath}/dis_vote_user/${userInfo.uid}`),
         (pre) => {
           let res = {
@@ -602,8 +610,7 @@ function ViewCon({ uid }) {
           { uid: userInfo.uid, name: userInfo.displayName },
         ],
       });
-      let disVoteCnt;
-      runTransaction(
+      disVoteCnt = await runTransaction(
         dRef(db, `vote_list/${queryPath}/${uid_}/dis_vote_count`),
         (pre) => {
           disVoteCnt = pre ? ++pre : 1;
@@ -621,7 +628,11 @@ function ViewCon({ uid }) {
         }
       );
     }
-    if (roomData.finish_type === 2 && disVoteCnt >= roomData.finish_count) {
+    console.log(disVoteCnt, roomData.finish_count);
+    if (
+      roomData.finish_type === 2 &&
+      disVoteCnt.snapshot._node.value_ >= roomData.finish_count
+    ) {
       runTransaction(
         dRef(db, `list/${queryPath}/${vote_userId}/disvote_count`),
         (pre) => {
@@ -709,9 +720,11 @@ function ViewCon({ uid }) {
     router.push("/mypage");
   };
 
-  const onVoteFinish = async () => {
+  const onVoteFinish = async (winData) => {
     let winner;
-    if (ranking.length >= 1) {
+    if (winData) {
+      winner = winData;
+    } else if (ranking.length >= 1) {
       let overlap = [ranking[0]];
       ranking.forEach((el, idx) => {
         if (idx > 0 && overlap[0].winner_point == el.winner_point) {
@@ -720,9 +733,8 @@ function ViewCon({ uid }) {
       });
       const random = Math.floor(Math.random() * ranking.length);
       winner = overlap[random];
-      console.log(winner);
-      update(dRef(db, `list/${queryPath}`), { winner });
     }
+    update(dRef(db, `list/${queryPath}`), { winner });
     setFinishVote(true);
     runTransaction(dRef(db, `list/${queryPath}/ing`), (pre) => {
       return false;

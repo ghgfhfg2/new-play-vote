@@ -92,9 +92,18 @@ function Mypage() {
           });
       });
     });
-
     let roomId = await get(ref(db, `user/${userInfo.uid}/room`)).then(
-      (data) => data.val() && data.val().indexOf(`${uid}`)
+      (data) => {
+        let id;
+        if (!data.val()) return;
+        for (const key in data.val()) {
+          console.log(data.val()[key], key, uid);
+          if (data.val()[key] == uid) {
+            id = key;
+          }
+        }
+        return id;
+      }
     );
     roomId != undefined &&
       remove(ref(db, `user/${userInfo.uid}/room/${roomId}`));

@@ -1,6 +1,7 @@
 {
   "name": "nextjs-project1",
   "private": true,
+  "homepage": ".",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
