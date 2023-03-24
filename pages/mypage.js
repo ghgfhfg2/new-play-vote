@@ -51,12 +51,15 @@ function Mypage() {
       let listArr = [];
       data.forEach((el) => {
         const list = el.val();
+        console.log(list);
         if (!userInfo) return;
         for (const key in list) {
           let vote_check = false;
           if (list[key].vote_user) {
             for (let key2 in list[key].vote_user) {
-              vote_check = userInfo.uid === key2 ? true : false;
+              if (userInfo.uid === key2) {
+                vote_check = true;
+              }
             }
           }
           if (

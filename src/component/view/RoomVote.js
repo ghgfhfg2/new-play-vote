@@ -146,14 +146,17 @@ function RoomVote({
                 )}
               </div>
             </div>
-            {userInfo && userInfo.uid === el.vote_user && (
-              <button
-                className={style.btn_vote_remove}
-                onClick={() => onVoteRemove(el.uid)}
-              >
-                <RiDeleteBinLine />
-              </button>
-            )}
+            {roomData &&
+              roomData.delete === 1 &&
+              userInfo &&
+              userInfo.uid === el.vote_user && (
+                <button
+                  className={style.btn_vote_remove}
+                  onClick={() => onVoteRemove(el.uid)}
+                >
+                  <RiDeleteBinLine />
+                </button>
+              )}
           </li>
         ))}
     </ul>

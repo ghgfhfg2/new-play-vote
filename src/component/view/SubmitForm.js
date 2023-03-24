@@ -3,6 +3,7 @@ import { AiOutlineUpload, AiOutlineDelete } from "react-icons/ai";
 import form from "styles/form.module.css";
 import { Form, Input, Button } from "antd";
 import style from "styles/view.module.css";
+import { useState, useEffect } from "react";
 
 function SubmitForm({
   roomData,

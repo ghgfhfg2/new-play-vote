@@ -26,6 +26,7 @@ function RoomInfo({ roomData, onOutView, roomUid }) {
           <li>{roomData.sender === 1 ? `제안자공개` : `제안자비공개`}</li>
           <li>{roomData.voter === 1 ? `투표자공개` : `투표자비공개`}</li>
           <li>{roomData.cancel === 1 ? `투표 취소가능` : `투표 취소불가`}</li>
+          <li>{roomData.delete === 1 ? `제안 취소가능` : `제안 취소불가`}</li>
           <li>{roomData.room_open === 1 ? `공개방` : `비공개방`}</li>
           <li>
             {roomData.finish_type === 1

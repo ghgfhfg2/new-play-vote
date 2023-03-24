@@ -78,6 +78,9 @@ function ViewCon({ uid }) {
   const [newChatState, setNewChatState] = useState(false);
   const [newVoteState, setNewVoteState] = useState(false);
 
+  //남은 제안횟수
+  const [restNumber, setRestNumber] = useState();
+
   useEffect(() => {
     let chatRef = query(
       dRef(db, `chat_list/${uid}/list`),
@@ -135,6 +138,12 @@ function ViewCon({ uid }) {
         data.val()[userInfo.uid] &&
         data.val()[userInfo.uid].disvote_count != undefined &&
         setDisVoteCount(data.val()[userInfo.uid].disvote_count);
+
+      let maxSubmit = data.val().max_vote;
+      let mySumbit = data.val()[userInfo.uid]
+        ? data.val()[userInfo.uid].submit_count
+        : 0;
+      setRestNumber(maxSubmit - mySumbit);
     });
     let voteRef = dRef(db, `vote_list/${queryPath}`);
     onValue(voteRef, (data) => {
@@ -407,6 +416,7 @@ function ViewCon({ uid }) {
 
   //좋아요 투표
   const onVote = async (uid_, user_uid, vote_userId, already) => {
+    let voteCount;
     const finishCheck = await get(dRef(db, `list/${queryPath}/ing`)).then(
       (data) => {
         return data.val();
@@ -442,53 +452,8 @@ function ViewCon({ uid }) {
           { uid: userInfo.uid, name: userInfo.displayName },
         ],
       });
-      runTransaction(
-        dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
-        (pre) => {
-          return pre ? ++pre : 1;
-        }
-      );
 
-      runTransaction(
-        dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
-        (pre) => {
-          let res = {
-            ...pre,
-            vote_count: pre && pre.vote_count ? pre.vote_count + 1 : 1,
-          };
-          return res;
-        }
-      );
-    } else if (already) {
-      let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
-      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
-        user_uid: [...newUser],
-      });
-      runTransaction(
-        dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
-        (pre) => {
-          return pre ? --pre : 0;
-        }
-      );
-
-      runTransaction(
-        dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
-        (pre) => {
-          let res = {
-            ...pre,
-            vote_count: pre && pre.vote_count ? pre.vote_count - 1 : 0,
-          };
-          return res;
-        }
-      );
-    } else {
-      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
-        user_uid: [
-          ...user_uid,
-          { uid: userInfo.uid, name: userInfo.displayName },
-        ],
-      });
-      let voteCount = await runTransaction(
+      voteCount = await runTransaction(
         dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
         (pre) => {
           voteCount = pre ? ++pre : 1;
@@ -505,21 +470,71 @@ function ViewCon({ uid }) {
           return res;
         }
       );
-
-      console.log(
-        roomData.finish_type,
-        voteCount.snapshot._node.value_,
-        roomData.finish_count
+    } else if (already) {
+      let newUser = user_uid.filter((el) => el.uid !== userInfo.uid);
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+        user_uid: [...newUser],
+      });
+      voteCount = await runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
+        (pre) => {
+          voteCount = pre ? --pre : 0;
+          return voteCount;
+        }
       );
 
+      runTransaction(
+        dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
+        (pre) => {
+          let res = {
+            ...pre,
+            vote_count: pre && pre.vote_count ? pre.vote_count - 1 : 0,
+          };
+          return res;
+        }
+      );
+    } else {
       if (
-        roomData.finish_type === 2 &&
-        voteCount.snapshot._node.value_ >= roomData.finish_count
+        roomData.type === 1 &&
+        roomData.vote_user &&
+        roomData.vote_user[userInfo.uid] &&
+        roomData.vote_user[userInfo.uid].vote_count >= 1
       ) {
-        console.log("finish");
-        const curVote = ranking.filter((el) => el.uid == uid_);
-        onVoteFinish(curVote[0]);
+        message.error("단일투표 입니다.");
+        return;
       }
+
+      update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
+        user_uid: [
+          ...user_uid,
+          { uid: userInfo.uid, name: userInfo.displayName },
+        ],
+      });
+      voteCount = await runTransaction(
+        dRef(db, `vote_list/${queryPath}/${uid_}/vote_count`),
+        (pre) => {
+          voteCount = pre ? ++pre : 1;
+          return voteCount;
+        }
+      );
+      runTransaction(
+        dRef(db, `list/${queryPath}/vote_user/${userInfo.uid}`),
+        (pre) => {
+          let res = {
+            ...pre,
+            vote_count: pre && pre.vote_count ? pre.vote_count + 1 : 1,
+          };
+          return res;
+        }
+      );
+    }
+    if (
+      roomData.finish_type === 2 &&
+      voteCount.snapshot._node.value_ >= roomData.finish_count
+    ) {
+      console.log("finish");
+      const curVote = ranking.filter((el) => el.uid == uid_);
+      onVoteFinish("current", curVote[0]);
     }
   };
 
@@ -604,6 +619,15 @@ function ViewCon({ uid }) {
         }
       );
     } else {
+      if (
+        roomData.type === 1 &&
+        roomData.dis_vote_user &&
+        roomData.dis_vote_user[userInfo.uid] &&
+        roomData.dis_vote_user[userInfo.uid].vote_count >= 1
+      ) {
+        message.error("단일투표 입니다.");
+        return;
+      }
       update(dRef(db, `vote_list/${queryPath}/${uid_}`), {
         dis_user_uid: [
           ...user_uid,
@@ -720,9 +744,9 @@ function ViewCon({ uid }) {
     router.push("/mypage");
   };
 
-  const onVoteFinish = async (winData) => {
+  const onVoteFinish = async (type, winData) => {
     let winner;
-    if (winData) {
+    if (type == "current") {
       winner = winData;
     } else if (ranking.length >= 1) {
       let overlap = [ranking[0]];
@@ -900,7 +924,7 @@ function ViewCon({ uid }) {
                   className={style.btn_open}
                   onClick={onSubmitPop}
                 >
-                  의견제안
+                  의견제안 ({restNumber})
                 </button>
                 {roomData &&
                   userInfo &&
