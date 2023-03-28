@@ -212,6 +212,7 @@
   margin-top: 5px; }
 
 .vote_list .con {
+  position: relative;
   flex: 1;
   background-color: #fff;
   display: flex;
@@ -693,3 +694,106 @@
 .room_chat_textArea {
   height: 50px !important;
   resize: none; }
+
+.opinion_box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px; }
+
+.opinion_box button {
+  display: flex;
+  align-items: center; }
+
+.opinion_box .btn_txt {
+  font-size: 12px;
+  margin-left: 5px; }
+
+.opinion_box .ic_op_list {
+  border: 0;
+  margin: 0 10px 0 0;
+  padding: 0;
+  background: none;
+  font-size: 14px; }
+
+.opinion_box .ic_add_op {
+  border: 0;
+  padding: 0;
+  margin-top: 2px;
+  background: none;
+  font-size: 17px; }
+
+.opinion_input {
+  margin-top: 10px;
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  bottom: 50px;
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5); }
+
+.opinion_input h2 {
+  margin-bottom: 10px;
+  font-size: 13px; }
+
+.opinion_input h2 span {
+  font-weight: 600;
+  font-size: 14px; }
+
+.opinion_list_box {
+  width: 90%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translateY(calc(100% + 10px));
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+
+.opinion_list_box::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: -10px;
+  width: 0;
+  height: 0;
+  border-bottom: calc(10px * 1.732) solid #fff;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent; }
+
+.opinion_list_box .opinion_list_scroll {
+  overflow: auto;
+  max-height: 500px;
+  padding-top: 5px;
+  width: 100%; }
+
+.opinion_list_box ul {
+  width: 100%; }
+
+.opinion_list_box ul li {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 12px; }
+
+.opinion_list_box ul li:last-child {
+  margin-bottom: 5px; }
+
+.opinion_list_box .ic_arrow {
+  margin-right: 5px;
+  font-size: 13px; }
+
+.opinion_list_box .ic_delete {
+  font-size: 13px;
+  cursor: pointer; }
+
+.opinion_close {
+  font-size: 28px;
+  cursor: pointer;
+  color: #f70f0f;
+  margin-left: 10px; }

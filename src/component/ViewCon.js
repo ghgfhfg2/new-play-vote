@@ -78,8 +78,9 @@ function ViewCon({ uid }) {
   const [newChatState, setNewChatState] = useState(false);
   const [newVoteState, setNewVoteState] = useState(false);
 
-  //남은 제안횟수
-  const [restNumber, setRestNumber] = useState();
+  const [opinionList, setOpinionList] = useState(); //의견리스트
+
+  const [restNumber, setRestNumber] = useState(); //남은 제안횟수
 
   useEffect(() => {
     let chatRef = query(
@@ -126,12 +127,16 @@ function ViewCon({ uid }) {
   }, [chatList]);
 
   const [disVoteCount, setDisVoteCount] = useState();
-
   useEffect(() => {
     let roomRef = dRef(db, `list/${queryPath}`);
     onValue(roomRef, (data) => {
       if (!data.val().ing) {
-        setFinishVote(true);
+        if (
+          !data.val().finish_check ||
+          !data.val().finish_check.includes(userInfo.uid)
+        ) {
+          setFinishVote(true);
+        }
       }
       setRoomData(data.val());
       userInfo.uid &&
@@ -152,10 +157,15 @@ function ViewCon({ uid }) {
         let el_vote = el.val().vote_count || 0;
         let el_dis_vote = el.val().dis_vote_count || 0;
         let elCount = el_vote - el_dis_vote;
+        let opinionList = [];
+        for (const key in el.val().opinion) {
+          opinionList.push({ ...el.val().opinion[key], uid: key });
+        }
         arr.push({
           ...el.val(),
           winner_point: elCount,
           uid: el.key,
+          opinionList,
         });
       });
       if (userInfo) {
@@ -766,8 +776,17 @@ function ViewCon({ uid }) {
     message.success("투표가 종료되었습니다.");
   };
 
+  const onVeiwVoteResult = () => {
+    setFinishVote(true);
+  };
+
   const finishPopClose = () => {
     setFinishVote(false);
+    runTransaction(dRef(db, `list/${queryPath}/finish_check`), (pre) => {
+      if (pre && pre.includes(userInfo.uid)) return;
+      let arr = pre ? [...pre, userInfo.uid] : [userInfo.uid];
+      return arr;
+    });
   };
 
   const onMoveList = (uid) => {
@@ -793,7 +812,42 @@ function ViewCon({ uid }) {
   };
 
   const onTimeOver = () => {
+    if (roomData.winner) return;
     onVoteFinish();
+  };
+
+  //의견남기기
+  const addOpinion = async (uid, value) => {
+    if (value === "") {
+      return;
+    }
+    const alreadyCheck = await get(
+      dRef(db, `vote_list/${queryPath}/${uid}/opinion/`)
+    ).then((data) => {
+      if (data.val() && data.val()[userInfo.uid]) {
+        return data.val()[userInfo.uid];
+      } else {
+        return false;
+      }
+    });
+    if (alreadyCheck) {
+      message.info("제안마다 하나의 의견만 남길 수 있습니다.");
+      return false;
+    } else {
+      set(dRef(db, `vote_list/${queryPath}/${uid}/opinion/${userInfo.uid}`), {
+        value: value,
+        name: userInfo.displayName,
+        date: new Date().getTime(),
+      });
+      message.success("의견이 추가 되었습니다.");
+      return true;
+    }
+  };
+  const onRemoveOp = (li, uid) => {
+    const agree = confirm("삭제하시겠습니까?");
+    if (agree) {
+      remove(dRef(db, `vote_list/${queryPath}/${li}/opinion/${uid}`));
+    }
   };
 
   return (
@@ -887,7 +941,7 @@ function ViewCon({ uid }) {
             </button>
           </div>
           {/* 투표,채팅 변경 끝 */}
-          {roomData?.timer_type == 2 && (
+          {roomData?.timer_type == 2 && !roomData.winner && (
             <div className={style.count_down}>
               <MdTimer style={{ marginRight: "5px" }} />
               {
@@ -911,6 +965,8 @@ function ViewCon({ uid }) {
             viewVoterList={viewVoterList}
             onVote={onVote}
             onDisVote={onDisVote}
+            addOpinion={addOpinion}
+            onRemoveOp={onRemoveOp}
           />
         )}
 
@@ -942,6 +998,13 @@ function ViewCon({ uid }) {
             ) : (
               <div className={style.btn_open_box}>
                 <div className={style.finish_txt}>투표가 종료되었습니다</div>
+                <button
+                  style={{ width: "100px" }}
+                  type="button"
+                  onClick={onVeiwVoteResult}
+                >
+                  결과보기
+                </button>
               </div>
             )}
           </>
