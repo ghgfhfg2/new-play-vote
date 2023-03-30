@@ -154,10 +154,12 @@ function RoomVote({
                                   />
                                   <span>{list.value}</span>
                                 </div>
-                                <AiOutlineDelete
-                                  className={style.ic_delete}
-                                  onClick={() => onRemoveOp(el.uid, list.uid)}
-                                />
+                                {userInfo.uid === list.uid && (
+                                  <AiOutlineDelete
+                                    className={style.ic_delete}
+                                    onClick={() => onRemoveOp(el.uid, list.uid)}
+                                  />
+                                )}
                               </li>
                             </>
                           ))}

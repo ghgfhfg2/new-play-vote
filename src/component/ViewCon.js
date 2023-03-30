@@ -167,6 +167,7 @@ function ViewCon({ uid }) {
           uid: el.key,
           opinionList,
         });
+        console.log(arr);
       });
       if (userInfo) {
         arr.forEach((list) => {
