@@ -51,7 +51,6 @@ function Mypage() {
       let listArr = [];
       data.forEach((el) => {
         const list = el.val();
-        console.log(list);
         if (!userInfo) return;
         for (const key in list) {
           let vote_check = false;
@@ -80,7 +79,6 @@ function Mypage() {
       listArr = listArr.sort((a, b) => {
         return b.date.timestamp - a.date.timestamp;
       });
-      console.log("listArr", listArr);
       setListData(listArr);
     });
     return () => {
@@ -108,7 +106,6 @@ function Mypage() {
         let id;
         if (!data.val()) return;
         for (const key in data.val()) {
-          console.log(data.val()[key], key, uid);
           if (data.val()[key] == uid) {
             id = key;
           }

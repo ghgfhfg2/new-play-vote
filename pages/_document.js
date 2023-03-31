@@ -18,6 +18,10 @@ class MyDocument extends Document {
             name="viewport"
             content="initial-scale=1.0, width=device-width"
           />
+          <meta httpEquiv="Pragma" content="no-cache" />
+          <meta httpEquiv="Expires" content="0" />
+          <meta httpEquiv="Cache-Control" content="no-cache" />
+          <base href="/" />
           <meta property="og:site_name" content="play vote | 투표를 합시다." />
           <meta property="og:title" content="play vote | 투표를 합시다." />
           <meta property="og:url" content="https://vote.sooyadev.com/" />

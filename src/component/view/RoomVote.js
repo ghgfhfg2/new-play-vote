@@ -116,16 +116,6 @@ function RoomVote({
                     </span>
                   )}
                   <div className={style.opinion_box}>
-                    {el.opinionList.length > 0 && (
-                      <button
-                        onClick={() => onOpinionPop(idx)}
-                        type="button"
-                        className={style.ic_op_list}
-                        title="의견목록"
-                      >
-                        <FaListUl />
-                      </button>
-                    )}
                     {roomData.ing && (
                       <button
                         type="button"
@@ -134,6 +124,16 @@ function RoomVote({
                         title="의견추가"
                       >
                         <BiMessageAdd />
+                      </button>
+                    )}
+                    {el.opinionList.length > 0 && (
+                      <button
+                        onClick={() => onOpinionPop(idx)}
+                        type="button"
+                        className={style.ic_op_list}
+                        title="의견목록"
+                      >
+                        <FaListUl />
                       </button>
                     )}
                   </div>

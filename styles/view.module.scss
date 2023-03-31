@@ -613,10 +613,20 @@
   }
   .ic_op_list {
     border: 0;
-    margin: 0 10px 0 0;
     padding: 0;
     background: none;
     font-size: 14px;
+    position: relative;
+    margin: 0 0 0 16px;
+    &::after {
+      content: "";
+      display: inline-block;
+      width: 1px;
+      height: 12px;
+      position: absolute;
+      left: -9px;
+      background-color: #999;
+    }
   }
   .ic_add_op {
     border: 0;
@@ -659,7 +669,7 @@
   &::before {
     content: "";
     position: absolute;
-    left: 15px;
+    left: 47px;
     top: -10px;
     width: 0;
     height: 0;

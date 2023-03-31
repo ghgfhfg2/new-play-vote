@@ -167,7 +167,6 @@ function ViewCon({ uid }) {
           uid: el.key,
           opinionList,
         });
-        console.log(arr);
       });
       if (userInfo) {
         arr.forEach((list) => {
@@ -663,7 +662,6 @@ function ViewCon({ uid }) {
         }
       );
     }
-    console.log(disVoteCnt, roomData.finish_count);
     if (
       roomData.finish_type === 2 &&
       disVoteCnt.snapshot._node.value_ >= roomData.finish_count
