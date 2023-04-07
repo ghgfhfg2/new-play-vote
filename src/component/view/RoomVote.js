@@ -109,7 +109,11 @@ function RoomVote({
                   )}
                   {el.link && (
                     <span className={style.vote_link}>
-                      <a href={el.link}>
+                      <a
+                        href={el.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         링크이동
                         <FiExternalLink />
                       </a>
