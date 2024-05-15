@@ -89,7 +89,6 @@ export default function Login() {
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          console.log(errorCode, errorMessage);
           // ..
         });
     }
@@ -105,6 +104,12 @@ export default function Login() {
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
+        if (errorCode == "auth/user-not-found") {
+          message.error("가입하지 않은 이메일 입니다.");
+        }
+        if (errorCode == "auth/wrong-password") {
+          message.error("비밀번호가 틀렸습니다.");
+        }
       });
   };
 
