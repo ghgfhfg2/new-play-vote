@@ -8,16 +8,16 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { ref, set } from "firebase/database";
-import { db, provider } from "src/firebase";
+import { db, provider } from "../src/firebase";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
-import { setUser } from "@redux/actions/user_action";
+import { setUser } from "../src/redux/actions/user_action";
 import { AiOutlineGoogle } from "react-icons/ai";
 import { MdAlternateEmail } from "react-icons/md";
 import Link from "next/link";
 import { Button, Form, Input, message, Modal } from "antd";
-import JoinModal from "@component/join/JoinModal";
-import LoginModal from "@component/login/LoginModal";
+import JoinModal from "../src/component/join/JoinModal";
+import LoginModal from "../src/component/login/LoginModal";
 
 export default function Login() {
   const auth = getAuth();

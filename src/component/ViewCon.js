@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { message, Spin } from "antd";
-import { db } from "src/firebase";
+import { db } from "../firebase";
 import {
   ref as dRef,
   set,
@@ -15,9 +15,9 @@ import {
   limitToLast,
   remove,
 } from "firebase/database";
-import { getFormatDate } from "@component/CommonFunc";
+import { getFormatDate } from "./CommonFunc";
 import uuid from "react-uuid";
-import style from "styles/view.module.css";
+import style from "../../styles/view.module.css";
 import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
 import { MdOutlineHowToVote, MdHowToVote, MdTimer } from "react-icons/md";
 import Countdown from "react-countdown";
@@ -44,8 +44,13 @@ const storage = getStorage();
 function ViewCon({ uid }) {
   const rankingBtnRef = useRef();
   const [domWid, setDomWid] = useState();
+  const [conHeight, setConHeight] = useState("100");
 
   useEffect(() => {
+    // let adHeight = document.querySelector(".adsbygoogle")?.clientHeight;
+    // if (adHeight != "undefined") {
+    //   setConHeight(document.querySelector(".adsbygoogle").clientHeight - 5);
+    // }
     setDomWid(document.body.clientWidth);
     const script = document.createElement("script");
     script.src = "https://developers.kakao.com/sdk/js/kakao.js";
@@ -130,6 +135,9 @@ function ViewCon({ uid }) {
   useEffect(() => {
     let roomRef = dRef(db, `list/${queryPath}`);
     onValue(roomRef, (data) => {
+      if (!data.val()) {
+        return;
+      }
       if (!data.val().ing) {
         if (
           !data.val().finish_check ||
@@ -707,6 +715,7 @@ function ViewCon({ uid }) {
     submitBox.current.style.display = "none";
     formRef.current.setFieldsValue({
       title: "",
+      info: "",
       link: "",
     });
     setClipImg("");
@@ -853,7 +862,7 @@ function ViewCon({ uid }) {
     <>
       <div
         className={style.view_con_box}
-        style={{ "--domWidPx": `${domWid}px` }}
+        style={{ "--domWidPx": `${domWid}px`, "--conHeight": `${conHeight}px` }}
       >
         {roomData?.winner && finishVote && (
           <WinnerModal
@@ -907,7 +916,7 @@ function ViewCon({ uid }) {
             )}
           </button>
           {/* 투표,채팅 변경 시작 */}
-          <div className={style.btn_switch}>
+          {/* <div className={style.btn_switch}>
             <button
               type="button"
               onClick={() => {
@@ -938,7 +947,7 @@ function ViewCon({ uid }) {
             >
               {roomType ? <BsChatDots /> : <BsChatDotsFill />}
             </button>
-          </div>
+          </div> */}
           {/* 투표,채팅 변경 끝 */}
           {roomData?.timer_type == 2 && !roomData.winner && (
             <div className={style.count_down}>

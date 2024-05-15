@@ -1,5 +1,5 @@
-import React from 'react';
-import { Spin } from 'antd';
+import React, { useEffect } from "react";
+import { Spin } from "antd";
 
 function Loading() {
   return (
@@ -8,7 +8,7 @@ function Loading() {
         <Spin />
       </div>
     </>
-  )
+  );
 }
 
-export default Loading
+export default Loading;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import {
   Form,
@@ -9,20 +9,49 @@ import {
   Radio,
   message,
 } from "antd";
-import { db } from "src/firebase";
-import { ref, set, runTransaction, update } from "firebase/database";
+import { db } from "../src/firebase";
+import { ref, set, runTransaction, update, get } from "firebase/database";
 import uuid from "react-uuid";
-import { getFormatDate } from "@component/CommonFunc";
+import { getFormatDate } from "../src/component/CommonFunc";
 import { useRouter } from "next/router";
 import moment from "moment";
+import RuleList from "../src/component/RuleList";
+import { first, last } from "../src/component/nameDb";
 
 function Regist() {
   const router = useRouter();
   const userInfo = useSelector((state) => state.user.currentUser);
 
-  const onFinish = (values) => {
+  const topBox = useRef();
+  const regisForm = useRef();
+
+  let reFinish = 0;
+
+  const onFinish = async (values) => {
+    if (reFinish > 2) {
+      message.error("더 이상 방을 생성할 수 없습니다.");
+      return;
+    }
+    const firstRandom = Math.floor(Math.random() * first.length);
+    const lastRandom = Math.floor(Math.random() * last.length);
+    const firstName = first[firstRandom];
+    const lastName = last[lastRandom];
+
+    const ranNum = Math.floor(Math.random() * 1000);
+    const uid = `${firstName}${lastName}${ranNum}`;
+
+    const listRef = ref(db, `list_index/${uid}`);
+    const dCheck = await get(listRef).then((data) => {
+      return data.val();
+    });
+
+    if (dCheck) {
+      reFinish++;
+      onFinish(values);
+      return;
+    }
+
     const date = getFormatDate(new Date());
-    const uid = uuid();
     if (values.timer_type == 2) {
       if (!values.timer_time) {
         message.error("투표종료 제한시간을 입력해주세요.");
@@ -32,9 +61,10 @@ function Regist() {
         .add(values.timer_time, "minute")
         .format("YYYY MM DD HH:mm:ss");
     }
+    let tagObj = {};
     if (values.tag) {
       const tagArr = values.tag.split(",");
-      let tagObj = {};
+      tagObj = {};
       tagArr.map((el) => {
         tagObj[el] = 1;
       });
@@ -111,147 +141,123 @@ function Regist() {
     }
   };
 
+  window.addEventListener("scroll", function (e) {
+    if (topBox.current) {
+      const fixTopY = topBox.current.getBoundingClientRect().top;
+      if (this.scrollY > fixTopY) {
+        topBox.current.classList.add("on");
+        topBox.current.querySelector(
+          ".fix_box"
+        ).style.width = `${topBox.current.clientWidth}px`;
+        if (document.querySelector(".ad_empty")) {
+          topBox.current.querySelector(".fix_box").style.top =
+            document.querySelector(".ad_empty").clientHeight + "px";
+        }
+      } else {
+        topBox.current.classList.remove("on");
+        topBox.current.querySelector(".fix_box").style.width = ``;
+        topBox.current.querySelector(".fix_box").style.top = 0;
+      }
+    }
+  });
+
+  const onLoadRule = () => {
+    if (userInfo.rule) {
+      regisForm.current.setFieldsValue({
+        ...userInfo.rule,
+      });
+      message.success("저장된 방규칙을 불러왔습니다.");
+    } else {
+      message.info("저장된 방규칙이 없습니다.");
+    }
+  };
+
   return (
     <>
       <div className="regist_box">
         <Form
+          ref={regisForm}
           name="basic"
-          initialValues={{
-            type: 2,
-            sender: 2,
-            voter: 2,
-            cancel: 1,
-            finish_type: 1,
-            timer_type: 1,
-            finish_count: 2,
-            room_open: 2,
-            delete: 1,
-            password: "",
-            max_vote: 5,
-            add: ["link", "img"],
-          }}
+          initialValues={
+            userInfo?.rule
+              ? userInfo?.rule
+              : {
+                  type: 2,
+                  sender: 2,
+                  voter: 2,
+                  cancel: 1,
+                  finish_type: 1,
+                  timer_type: 1,
+                  finish_count: 2,
+                  room_open: 2,
+                  delete: 1,
+                  password: "",
+                  max_vote: 5,
+                  add: ["link", "img"],
+                }
+          }
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
           className="write_form"
         >
-          <Form.Item
-            label="제목"
-            name="title"
-            rules={[{ required: true, message: "제목은 필수입니다." }]}
-          >
-            <Input type="text" maxLength={30} />
-          </Form.Item>
-          <Form.Item label="태그(콤마(,)로 구분 / 최대10개)" name="tag">
+          <div className="fix_wrap" ref={topBox}>
+            <div className="fix_box">
+              <Form.Item
+                label="제목"
+                name="title"
+                rules={[{ required: true, message: "제목은 필수입니다." }]}
+              >
+                <Input type="text" maxLength={30} />
+              </Form.Item>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: "0 1rem 1rem 1rem",
+                }}
+              >
+                <Button
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  style={{ width: "100%", height: "55px", borderRadius: "6px" }}
+                >
+                  방 생성하기
+                </Button>
+              </div>
+            </div>
+            <div className="empty"></div>
+          </div>
+
+          <div style={{ padding: "1rem", display: "flex" }}>
+            <h2
+              style={{
+                fontSize: "18px",
+                fontWeight: "600",
+                marginBottom: "10px",
+                marginRight: "10px",
+              }}
+            >
+              방 규칙
+            </h2>
+            <Button onClick={onLoadRule}>저장된 방규칙 불러오기</Button>
+          </div>
+
+          {/* <Form.Item label="태그(콤마(,)로 구분 / 최대10개)" name="tag">
             <Input
               type="text"
               maxLength={100}
               placeholder="예) 태그1,태그2,태그3"
             />
-          </Form.Item>
-          <Form.Item label="추가로 입력 가능한 항목" name="add">
-            <Checkbox.Group>
-              <Checkbox value="link">외부링크</Checkbox>
-              <Checkbox value="img">이미지</Checkbox>
-            </Checkbox.Group>
-          </Form.Item>
-          <Form.Item label="투표방식" name="type">
-            <Radio.Group size="large">
-              <Radio.Button value={1}>단일투표</Radio.Button>
-              <Radio.Button value={2}>중복투표</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item label="투표취소" name="cancel">
-            <Radio.Group size="large">
-              <Radio.Button value={1}>가능</Radio.Button>
-              <Radio.Button value={2}>불가능</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item label="최대 제안 횟수" name="max_vote">
-            <Radio.Group size="large">
-              <Radio.Button value={1}>1회</Radio.Button>
-              <Radio.Button value={2}>2회</Radio.Button>
-              <Radio.Button value={3}>3회</Radio.Button>
-              <Radio.Button value={4}>4회</Radio.Button>
-              <Radio.Button value={5}>5회</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item label="투표종료 기준" name="finish_type">
-            <Radio.Group size="large" onChange={handleFinishType}>
-              <Radio.Button value={1}>방장이 종료시</Radio.Button>
-              <Radio.Button value={2}>지정한 투표수에 도달시</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          {isFinishCount && (
-            <Form.Item label="투표수 지정" name="finish_count">
-              <InputNumber min={2} />
-            </Form.Item>
-          )}
-          <Form.Item label="투표종료 시간제한" name="timer_type">
-            <Radio.Group size="large" onChange={handleTimerType}>
-              <Radio.Button value={1}>무제한</Radio.Button>
-              <Radio.Button value={2}>시간지정</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          {isFinishTime && (
-            <>
-              <Form.Item label="제한시간(분)" name="timer_time">
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: "12px", marginBottom: "5px" }}>
-                    ※ 타임오버시 랭킹1위 제안으로 선정, 1위가 중복일때는
-                    랜덤선택
-                  </span>
-                  <InputNumber min={1} />
-                </div>
-              </Form.Item>
-            </>
-          )}
-          <Form.Item label="제안자공개" name="sender">
-            <Radio.Group size="large">
-              <Radio.Button value={1}>공개</Radio.Button>
-              <Radio.Button value={2}>비공개</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item label="투표자공개" name="voter">
-            <Radio.Group size="large">
-              <Radio.Button value={1}>공개</Radio.Button>
-              <Radio.Button value={2}>비공개</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item label="제안삭제" name="delete">
-            <Radio.Group size="large">
-              <Radio.Button value={1}>삭제가능</Radio.Button>
-              <Radio.Button value={2}>삭제불가</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item label="방 공개(목록에서 표시여부)" name="room_open">
-            <Radio.Group size="large">
-              <Radio.Button value={1}>공개방</Radio.Button>
-              <Radio.Button value={2}>비공개방</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item label="비밀번호" name="password">
-            <Input
-              type="text"
-              placeholder="암호가 없으면 누구나 입장 가능합니다."
-              maxLength={15}
+          </Form.Item> */}
+          <div style={{ paddingBottom: "1rem" }}>
+            <RuleList
+              isFinishCount={isFinishCount}
+              handleFinishType={handleFinishType}
+              isFinishTime={isFinishTime}
+              handleTimerType={handleTimerType}
             />
-          </Form.Item>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              padding: "1rem",
-            }}
-          >
-            <Button
-              size="large"
-              type="primary"
-              htmlType="submit"
-              style={{ width: "100%" }}
-            >
-              방 생성하기
-            </Button>
           </div>
         </Form>
       </div>

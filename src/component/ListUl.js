@@ -1,5 +1,5 @@
 import React from "react";
-import style from "styles/list.module.css";
+import style from "../../styles/list.module.css";
 import Link from "next/link";
 import { Popconfirm, message } from "antd";
 import { useRouter } from "next/router";
@@ -52,7 +52,7 @@ function ListUl({ listData, onDel, userUid }) {
             {el.host === userUid && (
               <Popconfirm
                 title="해당 방을 삭제하시겠습니까?"
-                onConfirm={() => onDel(el.uid,el.date)}
+                onConfirm={() => onDel(el.uid, el.date)}
                 okText="네"
                 cancelText="아니요"
               >

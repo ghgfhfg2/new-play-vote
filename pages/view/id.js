@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import { db } from "src/firebase";
+import { db } from "../../src/firebase";
 import { ref, onValue, off, runTransaction, get } from "firebase/database";
 import { Input, message, Button } from "antd";
-import ViewCon from "@component/ViewCon";
+import ViewCon from "../../src/component/ViewCon";
 import { RiArrowGoBackLine } from "react-icons/ri";
 const { Search } = Input;
 
@@ -36,6 +36,11 @@ export default function View() {
     if (isRoomCheck) {
       const listRef = ref(db, `list/${queryPath}`);
       onValue(listRef, (data) => {
+        if (!data.val()) {
+          message.info("방이 삭제 되었습니다.");
+          router.push("/mypage");
+          return;
+        }
         let keys;
         if (data.val()) {
           keys = Object.keys(data.val().vote_user);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { db } from "src/firebase";
+import { db } from "../firebase";
 import {
   ref,
   onValue,
@@ -14,7 +14,7 @@ import {
 } from "firebase/database";
 import ListUl from "./ListUl";
 import { Input, Empty, Select, Button } from "antd";
-import { getFormatDate } from "@component/CommonFunc";
+import { getFormatDate } from "./CommonFunc";
 const { Search } = Input;
 const { Option } = Select;
 
@@ -25,8 +25,10 @@ function List() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchType, setSearchType] = useState(1);
   let curDate = getFormatDate(new Date());
-  let curDate_ = new Date()
-  let prevDate_ = getFormatDate(new Date(curDate_.setDate(curDate_.getDate() - 1)))
+  let curDate_ = new Date();
+  let prevDate_ = getFormatDate(
+    new Date(curDate_.setDate(curDate_.getDate() - 1))
+  );
   const [searchDate, setSearchDate] = useState(prevDate_);
   const onSearchType = (e) => {
     setSearchType(e);
@@ -105,11 +107,12 @@ function List() {
     };
   }, [searchKeyword, bestTag]);
 
-  const getAddList = () => {    
+  const getAddList = () => {
     let prevDateT = new Date(searchDate.timestamp);
     let prevDate = getFormatDate(prevDateT);
-    get(ref(db, `list/${prevDate.year}/${prevDate.month}/${prevDate.day}`))
-    .then(data=>{
+    get(
+      ref(db, `list/${prevDate.year}/${prevDate.month}/${prevDate.day}`)
+    ).then((data) => {
       let listArr = [];
       data.forEach((el) => {
         if (searchType === 2 && searchKeyword !== "") {
@@ -137,9 +140,10 @@ function List() {
         el.tag = tagArr;
       });
       setListData([...listData, ...listArr]);
-      setSearchDate(getFormatDate(new Date(prevDateT.setDate(prevDateT.getDate() - 1))));
-    })
-
+      setSearchDate(
+        getFormatDate(new Date(prevDateT.setDate(prevDateT.getDate() - 1)))
+      );
+    });
   };
 
   const onSearch = (e) => {

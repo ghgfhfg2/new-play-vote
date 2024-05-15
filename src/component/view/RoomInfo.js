@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import style from "styles/view.module.css";
+import style from "../../../styles/view.module.css";
 import { IoExitOutline } from "react-icons/io5";
-import KakaoShareButton from "@component/KakaoShareButton";
+import KakaoShareButton from "../KakaoShareButton";
 import { AiOutlineShareAlt } from "react-icons/ai";
 import { FiCopy } from "react-icons/fi";
 import { message } from "antd";
-import { copyText } from "@component/CommonFunc";
+import { copyText } from "../CommonFunc";
 
 function RoomInfo({ roomData, onOutView, roomUid }) {
   const [isShareList, setIsShareList] = useState(false);
@@ -41,6 +41,32 @@ function RoomInfo({ roomData, onOutView, roomUid }) {
           {roomData.add && roomData.add.includes("link") && <li>링크</li>}
           {roomData.add && roomData.add.includes("img") && <li>이미지</li>}
         </ul>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "10px",
+          }}
+        >
+          <span
+            style={{ fontSize: "13px", fontWeight: "600" }}
+          >{`코드명 : ${roomUid}`}</span>
+          <button
+            type="button"
+            style={{
+              background: "#fff",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              padding: "5px 6px",
+              marginLeft: "6px",
+              fontSize: "12px",
+            }}
+            onClick={onCopyCode}
+          >
+            <FiCopy />
+            코드복사
+          </button>
+        </div>
         <h2>{roomData.title}</h2>
       </div>
       <div className={style.room_top_right}>
@@ -52,9 +78,6 @@ function RoomInfo({ roomData, onOutView, roomUid }) {
         </button>
         <div className={isShareList ? "share_list on" : "share_list"}>
           <KakaoShareButton roomData={roomData} />
-          <button type="button" className="ic_copy" onClick={onCopyCode}>
-            <FiCopy />
-          </button>
         </div>
       </div>
     </div>

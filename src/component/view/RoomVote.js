@@ -13,7 +13,7 @@ import { FaListUl } from "react-icons/fa";
 import { AiOutlineEnter, AiOutlineCloseCircle } from "react-icons/ai";
 import { BiMessageAdd } from "react-icons/bi";
 import { Button, Image, Input, message } from "antd";
-import style from "styles/view.module.css";
+import style from "../../../styles/view.module.css";
 
 function RoomVote({
   userInfo,

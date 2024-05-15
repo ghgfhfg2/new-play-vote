@@ -1,8 +1,8 @@
 import React from "react";
 import { AiOutlineUpload, AiOutlineDelete } from "react-icons/ai";
-import form from "styles/form.module.css";
+import form from "../../../styles/form.module.css";
 import { Form, Input, Button } from "antd";
-import style from "styles/view.module.css";
+import style from "../../../styles/view.module.css";
 import { useState, useEffect } from "react";
 
 function SubmitForm({
@@ -39,12 +39,15 @@ function SubmitForm({
       {roomData && roomData.add && roomData.add.includes("img") && (
         <>
           <div className={style.img_upload_box}>
-            <Input onPaste={clipboard} placeholder="복사한 이미지 붙여넣기" />
+            <Input
+              onPaste={clipboard}
+              placeholder="커서 놓고 복사한 이미지 붙여넣기"
+            />
             <div className={style.input_file}>
               <input type="file" id="img_file" onChange={clipboard} />
               <label htmlFor="img_file">
                 <AiOutlineUpload />
-                이미지 첨부
+                직접 이미지 첨부하기
               </label>
             </div>
           </div>
@@ -63,7 +66,11 @@ function SubmitForm({
             ))}
         </>
       )}
-      <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
+      <Button
+        type="primary"
+        htmlType="submit"
+        style={{ width: "100%", height: "50px", borderRadius: "7px" }}
+      >
         제안하기
       </Button>
     </Form>

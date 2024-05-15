@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import style from "styles/view.module.css";
+import style from "../../../styles/view.module.css";
 import { Image } from "antd";
 import { FiExternalLink } from "react-icons/fi";
 import { AiOutlineTrophy } from "react-icons/ai";

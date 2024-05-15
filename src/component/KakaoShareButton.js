@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { RiKakaoTalkFill } from "react-icons/ri";
-import style from "styles/view.module.css";
+import style from "../../styles/view.module.css";
 
 const KakaoShareButton = ({ roomData }) => {
   const [roomInfo, setRoomInfo] = useState();
@@ -28,7 +28,7 @@ const KakaoShareButton = ({ roomData }) => {
       const kakao = window.Kakao;
       // 중복 initialization 방지
       if (!kakao.isInitialized()) {
-        kakao.init("8494f97dc8f42919153f027d0d4655b0");
+        kakao.init("606daa383c40c8d3e17eaa49cdf3ab0e");
       }
 
       kakao.Link.createDefaultButton({

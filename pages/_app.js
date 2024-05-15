@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import Top from "@component/Top";
 import "antd/dist/antd.css";
-import "styles/App.css";
-import wrapper from "@redux/store/configureStore";
+import "../styles/App.css";
+import wrapper from "../src/redux/store/configureStore";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser, clearUser, nickChange } from "@redux/actions/user_action";
-import { db, auth } from "src/firebase";
+import {
+  setUser,
+  clearUser,
+  nickChange,
+} from "../src/redux/actions/user_action";
+import { db, auth } from "../src/firebase";
 import { ref, onValue, off, get } from "firebase/database";
 import { useRouter } from "next/router";
 import Login from "./login";
 import Loading from "../src/component/Loading";
-import Footer from "@component/Footer";
-import AppLayout from "@component/AppLayout";
-import Join from "./join";
+import Footer from "../src/component/Footer";
+import AppLayout from "../src/component/AppLayout";
+import GoogleAd from "../src/component/GoogleAd";
 
 function App({ Component, pageProps }) {
   const dispatch = useDispatch();
@@ -24,17 +26,22 @@ function App({ Component, pageProps }) {
 
   auth.onAuthStateChanged((user) => {
     if (user) {
-      const userRef = ref(db, `user/${user.uid}/nick`);
+      const userRef = ref(db, `user/${user.uid}`);
       get(userRef).then((data) => {
-        if (data.val()) {
-          let nickUser = {
-            ...user,
-            displayName: data.val(),
-          };
-          dispatch(setUser(nickUser));
-        } else {
-          dispatch(setUser(user));
+        let userData = {
+          ...user,
+        };
+        if (data.val()?.rule) {
+          userData = { ...userData, rule: data.val().rule };
         }
+        if (data.val()?.nick) {
+          userData = {
+            ...userData,
+            nick: data.val().nick,
+            displayName: data.val().nick,
+          };
+        }
+        dispatch(setUser(userData));
       });
       setAuthCheck(true);
     } else {
@@ -53,6 +60,7 @@ function App({ Component, pageProps }) {
           <>
             {authCheck ? (
               <>
+                <GoogleAd />
                 <Component {...pageProps} />
                 {!path.includes("/view") && (
                   <>
@@ -61,8 +69,6 @@ function App({ Component, pageProps }) {
                   </>
                 )}
               </>
-            ) : path === "/join" ? (
-              <Join />
             ) : (
               <Login />
             )}

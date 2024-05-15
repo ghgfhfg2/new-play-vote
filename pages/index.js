@@ -1,15 +1,18 @@
-import Head from "next/head";
-import Image from "next/image";
-import List from "@component/List";
-import style from "styles/Home.module.css";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+
+import Mypage from "../src/component/Mypage";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/mypage");
+  }, []);
+
   return (
-    <div>
-      <Head>
-        <title>title</title>
-      </Head>
-      <List />
-    </div>
+    <>
+      <Mypage />
+    </>
   );
 }
