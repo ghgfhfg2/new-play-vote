@@ -319,6 +319,10 @@ function ViewCon({ uid }) {
   const [submitLoading, setSubmitLoading] = useState(false);
 
   const onFinish = (values) => {
+    if (voteListData.length > 100) {
+      message.info("전체 100개 제안까지 가능 합니다.");
+      return;
+    }
     const linkRegex = /[\<\>\{\}\s]/g;
     values.title && values.title.replace(linkRegex, "");
     values.link = values.link ? values.link.replace(linkRegex, "") : "";
